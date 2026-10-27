@@ -7,6 +7,7 @@ import { buildingName, slotById } from '../sim/catalog.ts';
 import { createRng, type Rng } from '../util/rng.ts';
 import {
   antenna,
+  banana,
   bananaBunch,
   bananaPlant,
   barrel,
@@ -1325,13 +1326,7 @@ function faceCarving(x: number, y: number, p: Palette): string {
 }
 
 function bananaGlyph(x: number, y: number, p: Palette): string {
-  return `${rect(x - 3, y - 3, 6, 2, p.accent)}${rect(x + 1, y - 1, 2, 5, p.accent)}${rect(
-    x - 4,
-    y + 2,
-    4,
-    2,
-    p.accent,
-  )}${rect(x - 4, y - 1, 1, 3, p.accentDark)}${rect(x + 2, y - 2, 1, 1, p.bananaLight)}`;
+  return banana(x - 5, y - 4, 1, p);
 }
 
 function hayBale(x: number, base: number, p: Palette): string {
@@ -1467,19 +1462,7 @@ function turbineBlades(p: Palette): string {
 }
 
 function giantBanana(x: number, y: number, scale: number, p: Palette): string {
-  return `<g transform="translate(${x} ${y}) scale(${scale})">${rect(
-    -3,
-    -28,
-    6,
-    6,
-    p.bananaDark,
-  )}${rect(-12, -24, 18, 7, p.banana)}${rect(-17, -17, 14, 7, p.banana)}${rect(
-    -14,
-    -10,
-    10,
-    5,
-    p.bananaDark,
-  )}${rect(-9, -24, 7, 2, p.bananaLight)}${rect(-13, -18, 5, 1, p.bananaLight, 'opacity="0.75"')}</g>`;
+  return `<g transform="translate(${x} ${y}) scale(${scale})">${banana(-15, -28, 3, p)}</g>`;
 }
 
 function orbitalRing(p: Palette): string {
@@ -1491,7 +1474,7 @@ function orbitalRing(p: Palette): string {
     const angle = (i / 8) * Math.PI * 2;
     parts.push(rect(Math.cos(angle) * 52 - 2, Math.sin(angle) * 20 - 2, 4, 4, p.accent2));
   }
-  parts.push(giantBanana(0, 4, 1.15, p));
+  parts.push(giantBanana(0, 24, 1.15, p));
   parts.push(rect(-4, -30, 8, 8, p.metalLight));
   parts.push(circle(0, -32, 3, p.accent2, 'class="blink"'));
   parts.push(rect(-1, -38, 2, 6, p.accent));

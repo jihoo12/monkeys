@@ -1,6 +1,6 @@
 import type { Palette } from './palette.ts';
 import { shade } from './palette.ts';
-import { circle, ellipse, line, poly, rect } from './svg.ts';
+import { circle, ellipse, line, path, poly, rect } from './svg.ts';
 
 /**
  * Shared pixel-art vocabulary.
@@ -350,26 +350,27 @@ export function chimney(
   )}`;
 }
 
-export function bananaBunch(x: number, y: number, scale: number, p: Palette): string {
-  return `<g transform="translate(${x} ${y}) scale(${scale})">${rect(
-    -3,
-    0,
-    6,
-    2,
+/** A connected 10 × 8 crescent, with a shaded peel and two brown tips. */
+export function banana(x: number, y: number, scale: number, p: Palette): string {
+  return `<g transform="translate(${x} ${y}) scale(${scale})">${path(
+    'M0 1H2V3H3V4H6V3H7V2H8V0H10V4H9V6H8V7H6V8H3V7H2V6H1V4H0Z',
     p.bananaDark,
-  )}${rect(-2, -1, 5, 2, p.banana)}${rect(-1, -2, 2, 1, p.bananaLight)}${rect(
-    -5,
-    2,
-    3,
-    1,
+  )}${path(
+    'M1 2H2V3H3V4H6V3H7V2H9V4H8V5H7V6H3V5H2V4H1Z',
     p.banana,
-  )}${rect(2, 2, 4, 1, p.banana)}${rect(-5, 3, 2, 1, p.bananaDark)}${rect(
-    3,
-    3,
-    3,
-    1,
-    p.bananaDark,
-  )}</g>`;
+  )}${path(
+    'M1 2H2V3H3V4H6V3H7V2H8V4H7V5H3V4H2V3H1Z',
+    p.bananaLight,
+  )}${rect(8, 0, 2, 2, p.woodDark)}${rect(8, 0, 1, 1, p.woodLight)}${rect(0, 1, 1, 2, p.woodDark)}</g>`;
+}
+
+export function bananaBunch(x: number, y: number, scale: number, p: Palette): string {
+  return `<g transform="translate(${x} ${y}) scale(${scale})">${banana(-5, -4, 0.7, p)}${banana(
+    -1,
+    -3,
+    0.7,
+    p,
+  )}${banana(-3, -1, 0.75, p)}${rect(0, -5, 2, 3, p.woodDark)}${rect(0, -5, 1, 2, p.woodLight)}</g>`;
 }
 
 export function bananaPlant(x: number, base: number, scale: number, p: Palette): string {

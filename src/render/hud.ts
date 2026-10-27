@@ -89,8 +89,8 @@ function renderCards(state: CivilizationState, palette: Palette): string {
       detail: `+${displayNumber(state.bananaIncome)} / DAY`,
       accent: palette.banana,
       scale: 3,
-      iconX: 13,
-      iconY: 18,
+      iconX: 12,
+      iconY: 16,
     },
     {
       icon: drawMonkeyFaceIcon(0, 0, 2.4, palette),

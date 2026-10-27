@@ -3,7 +3,7 @@ import type { Palette } from './palette.ts';
 import { shade } from './palette.ts';
 import { circle, ellipse, line, poly, rect } from './svg.ts';
 import { pixelText } from './pixel-font.ts';
-import { bananaBunch } from './art.ts';
+import { banana } from './art.ts';
 
 export interface MonkeyDrawOptions {
   x: number;
@@ -174,9 +174,9 @@ export function drawMonkey(monkey: MonkeyState, options: MonkeyDrawOptions): str
   inner.push(drawTail(fur, outfit, ageId));
   inner.push(drawLegs(fur, outfit, ageId, monkey));
   inner.push(drawBody(fur, outfit, ageId, monkey));
-  inner.push(drawArms(fur, outfit, ageId, monkey));
+  inner.push(drawArms(fur, outfit, ageId, monkey, palette));
   inner.push(drawHead(fur, outfit, ageId, monkey, palette));
-  inner.push(drawHeldItem(monkey, fur, outfit, palette, ageId));
+  inner.push(drawHeldItem(monkey, palette));
 
   const sprite = inner.join('');
   const bodyClass = walk
@@ -312,7 +312,7 @@ function drawPouch(outfit: Outfit): string {
   )}`;
 }
 
-function drawArms(fur: Fur, outfit: Outfit, ageId: AgeId, monkey: MonkeyState): string {
+function drawArms(fur: Fur, outfit: Outfit, ageId: AgeId, monkey: MonkeyState, palette: Palette): string {
   const bare = ageId === 'stone';
   const sleeveLeft = bare
     ? `${rect(-7, -18, 2, 5, fur.fur)}${rect(-8, -18, 3, 2, fur.furLight)}`
@@ -323,8 +323,11 @@ function drawArms(fur: Fur, outfit: Outfit, ageId: AgeId, monkey: MonkeyState): 
   const glove = ageId === 'space' ? outfit.trim : fur.furLight;
   const handLeft = `${rect(-7, -13, 3, 2, fur.outline)}${rect(-7, -13, 2, 1, glove)}`;
   const handRight = `${rect(5, -13, 3, 2, fur.outline)}${rect(5, -13, 2, 1, glove)}`;
+  const bananaHand = heldBananaHand(monkey, ageId);
+  const leftBanana = bananaHand === -1 ? drawHeldBanana(-1, palette) : '';
+  const rightBanana = bananaHand === 1 ? drawHeldBanana(1, palette) : '';
   const cuff = ageId === 'modern' ? `${rect(-7, -14, 3, 1, outfit.trim)}${rect(5, -14, 3, 1, outfit.trim)}` : '';
-  return `<g class="arm arm-l">${sleeveLeft}${handLeft}${cuff}</g><g class="arm arm-r">${sleeveRight}${handRight}${
+  return `<g class="arm arm-l">${sleeveLeft}${leftBanana}${handLeft}${cuff}</g><g class="arm arm-r">${sleeveRight}${rightBanana}${handRight}${
     ageId === 'modern' ? cuff : ''
   }${drawTool(monkey, fur, outfit, ageId)}</g>`;
 }
@@ -662,64 +665,40 @@ function drawTool(
   }
 }
 
-function drawHeldItem(
-  monkey: MonkeyState,
-  fur: Fur,
-  outfit: Outfit,
-  palette: Palette,
-  ageId: AgeId,
-): string {
-  if (monkey.role === 'walker') {
-    const carry = monkey.id % 3;
-    if (carry === 0) {
-      return `<g class="carry">${bananaBunch(6, -9, 1.15, palette)}${rect(
-        6,
-        -12,
-        5,
-        1,
-        fur.outline,
-        'opacity="0.6"',
-      )}</g>`;
-    }
-    if (carry === 1) {
-      return `<g class="carry">${rect(-10, -15, 8, 5, palette.woodDark)}${rect(
-        -9,
-        -14,
-        6,
-        3,
-        palette.wood,
-      )}${rect(-8, -15, 3, 1, palette.banana, 'opacity="0.9"')}${rect(
-        2,
-        -15,
-        3,
-        5,
-        palette.woodDark,
-        'opacity="0.35"',
-      )}</g>`;
-    }
-    return `<g class="carry">${rect(6, -11, 3, 3, palette.bananaDark)}${rect(
-      7,
-      -12,
+function heldBananaHand(monkey: MonkeyState, ageId: AgeId): -1 | 0 | 1 {
+  if (monkey.role === 'walker') return monkey.id % 3 === 1 ? 0 : 1;
+  if (
+    (monkey.role === 'farmer' && ageId !== 'space') ||
+    (monkey.role === 'elder' && ageId === 'stone') ||
+    monkey.role === 'chef'
+  ) {
+    return -1;
+  }
+  return 0;
+}
+
+function drawHeldBanana(hand: -1 | 1, palette: Palette): string {
+  // Anchor the stem inside the palm; the fingers are painted over it.
+  // Nesting the fruit in the arm keeps their movement together.
+  return `<g class="held-banana" transform="translate(${hand * 6.5} -12.5) scale(${hand * 0.7} 0.7) rotate(-80) translate(-9 -1)">${banana(0, 0, 1, palette)}</g>`;
+}
+
+function drawHeldItem(monkey: MonkeyState, palette: Palette): string {
+  if (monkey.role === 'walker' && monkey.id % 3 === 1) {
+    return `<g class="carry">${rect(-10, -15, 8, 5, palette.woodDark)}${rect(
+      -9,
+      -14,
+      6,
+      3,
+      palette.wood,
+    )}${rect(-8, -15, 3, 1, palette.banana, 'opacity="0.9"')}${rect(
       2,
-      1,
-      palette.banana,
-    )}${rect(6, -10, 1, 1, palette.bananaLight)}</g>`;
-  }
-  if (monkey.role === 'farmer' && ageId !== 'space') {
-    return `<g class="carry">${bananaBunch(-9, -15, 0.9, palette)}</g>`;
-  }
-  if (monkey.role === 'elder' && ageId === 'stone') {
-    return `${rect(-9, -18, 2, 4, palette.bananaDark, 'opacity="0.9"')}${rect(
-      -8,
-      -18,
-      1,
-      2,
-      palette.banana,
-      'opacity="0.8"',
-    )}`;
-  }
-  if (monkey.role === 'chef') {
-    return `<g class="carry">${bananaBunch(-9, -14, 0.8, palette)}</g>`;
+      -15,
+      3,
+      5,
+      palette.woodDark,
+      'opacity="0.35"',
+    )}</g>`;
   }
   return '';
 }
@@ -774,25 +753,7 @@ export function drawSpeechBubble(
 const SCENE_SAFE_WIDTH = 960;
 
 export function drawBananaIcon(x: number, y: number, scale: number, palette: Palette): string {
-  return `<g transform="translate(${x} ${y}) scale(${scale})" shape-rendering="crispEdges">${rect(
-    1,
-    1,
-    6,
-    2,
-    palette.bananaDark,
-  )}${rect(2, 0, 5, 1, palette.banana)}${rect(3, 3, 5, 2, palette.banana)}${rect(
-    2,
-    5,
-    3,
-    1,
-    palette.bananaDark,
-  )}${rect(0, 0, 1, 2, palette.bananaDark)}${rect(7, 5, 1, 2, palette.bananaDark)}${rect(
-    3,
-    1,
-    2,
-    1,
-    palette.bananaLight,
-  )}${rect(4, 4, 2, 1, palette.bananaLight, 'opacity="0.8"')}</g>`;
+  return `<g shape-rendering="crispEdges">${banana(x, y, scale, palette)}</g>`;
 }
 
 export function drawMonkeyFaceIcon(
