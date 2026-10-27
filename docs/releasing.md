@@ -1,7 +1,7 @@
 # Releasing the action
 
 The repository is prepared for release. Publishing is a deliberate manual step:
-CI and the daily workflow never create or move tags, and preparing the action
+CI and the generation workflow never create or move tags, and preparing the action
 does not publish a release or a `v1` tag.
 
 ## 1. Preflight
@@ -90,7 +90,7 @@ git push origin v1 --force
 ```
 
 This is the only command that changes what `jihoo12/monkeys@v1` resolves to.
-It is intentionally not automated: neither CI nor the daily generation workflow
+It is intentionally not automated: neither CI nor the generation workflow
 creates or moves tags. If the repository uses GitHub's immutable releases
 setting, tags cannot be moved; publish a new version instead.
 

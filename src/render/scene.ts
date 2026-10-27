@@ -89,7 +89,15 @@ export function renderScene(
   const monkeys = renderMonkeys(state, palette, walkers, animation);
   const foreground = renderForeground(rng, palette, state);
 
-  const night = `<rect class="night" x="0" y="0" width="${SCENE_WIDTH}" height="${SCENE_HEIGHT}" fill="${palette.night}" style="--night-opacity:${palette.nightOpacity}"/>`;
+  // The day/night overlay must not cover the village when a client ignores
+  // CSS animation. Non-space ages start at opacity 0 and animate up; the space
+  // age has no day/night cycle, so it keeps its fixed opacity and disables the
+  // inherited animation inline. `opacity` is a presentation attribute, which
+  // rasterizers still honor when the keyframes are unavailable.
+  const night =
+    state.age.id === 'space' && animation
+      ? `<rect class="night" x="0" y="0" width="${SCENE_WIDTH}" height="${SCENE_HEIGHT}" fill="${palette.night}" opacity="${palette.nightOpacity}" style="animation:none"/>`
+      : `<rect class="night" x="0" y="0" width="${SCENE_WIDTH}" height="${SCENE_HEIGHT}" fill="${palette.night}" opacity="0" style="--night-opacity:${palette.nightOpacity}"/>`;
   const stars = renderStars(rng, palette, state);
   const moon = renderMoon(palette, state);
   const fireflies = renderFireflies(rng, palette, state);
@@ -1071,7 +1079,7 @@ function renderHeader(state: CivilizationState, palette: Palette): string {
   const subtitle = `@${username} * YEAR 1 * DAY ${day}`;
   const tagline = 'COMMITS IN. BANANAS OUT.';
   const taglineX = 902 - pixelTextWidth(tagline, 2);
-  const generated = 'AUTO-GENERATED DAILY';
+  const generated = username.startsWith('DEMO/') ? 'REPRODUCIBLE DEMO' : 'GENERATED FROM COMMITS';
   const generatedX = 902 - pixelTextWidth(generated, 2);
   return `<g class="header">${pixelHeader('MONKEY CIVILIZATION', 56, 18, 4, palette, 3)}${rect(
     56,

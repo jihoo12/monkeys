@@ -68,7 +68,6 @@ const BASE_CSS = `
 .sun{animation:sun-arc 120s ease-in-out infinite}
 .moon{animation:moon-rise 120s ease-in-out infinite}
 .night{animation:nightfall 120s ease-in-out infinite}
-.age-space .night{opacity:var(--night-opacity,.35);animation:none}
 .star{opacity:.12;animation:star-night 120s ease-in-out infinite}
 .age-space .star{opacity:.8;animation:twinkle 3.6s ease-in-out infinite alternate}
 .planet{transform-box:fill-box;transform-origin:center;animation:planet-drift 9s ease-in-out infinite alternate}

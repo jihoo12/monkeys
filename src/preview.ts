@@ -173,7 +173,7 @@ function renderPage(path: string, version: number): string {
   <p>This page loads the SVG through an <code>&lt;img&gt;</code> element, which is how a GitHub profile README loads it. The SVG contains no JavaScript and no external assets.</p>
   <ul>
     <li>CSS animation is progressive enhancement. The static fallback uses the same scene with all animations disabled.</li>
-    <li>GitHub's Camo image proxy caches images. If a daily update looks stale, append a version query string to the README URL.</li>
+    <li>GitHub's Camo image proxy caches images. If a generated update looks stale, append a version query string to the README URL.</li>
     <li>GitHub mobile clients and some viewers may show only the static first frame.</li>
   </ul>
 </div>

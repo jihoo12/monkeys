@@ -76,13 +76,13 @@ The animated space-age example is roughly **180 KB** and about **1,900 SVG eleme
 - **Over 500 KB**: warning. It should render, but smaller is safer for READMEs.
 - **Over 2 MB**: error. Some image proxies or clients may reject or struggle with it.
 
-The renderer keeps the scene at 960×660 and uses simple geometry. There are no filters, no large embedded rasters, and no external requests. Animation is CSS-only and uses transform/opacity where possible.
+The renderer keeps a 960×500 scene plus a ~160px HUD in a 960×660 canvas and uses simple geometry. There are no filters, no large embedded rasters, and no external requests. Animation is CSS-only and uses transform/opacity where possible.
 
 If you need a smaller file, use `--no-animation`. That removes all keyframes and animation declarations while keeping the full scene.
 
 ## Cache busting
 
-GitHub Camo caches images by URL. The daily workflow commits new contents to the same path, so the URL does not change.
+GitHub Camo caches images by URL. The generation workflow commits new contents to the same path, so the URL does not change.
 
 If the README looks stale:
 

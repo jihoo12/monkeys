@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { Resvg } from '@resvg/resvg-js';
 import { DEMO_PROFILES, demoHistory, type DemoProfile } from '../src/data/demo.ts';
 import { makeHistory } from '../src/data/contributions.ts';
 import { simulateCivilization } from '../src/sim/engine.ts';
@@ -89,6 +90,37 @@ test('static mode removes every animation while keeping the scene', () => {
   const report = checkSvgCompatibility(staticSvg);
   assert.equal(report.ok, true);
   assert.ok(report.issues.some((issue) => issue.code === 'no-animation'));
+});
+
+test('animated SVGs keep the village visible when CSS animation is ignored', () => {
+  // A rasterizer that ignores @keyframes still has to show a readable first
+  // frame. Historically the night overlay had no default opacity and painted
+  // the whole scene black in screenshots, RSS readers and social previews.
+  for (const profile of PROFILES) {
+    const svg = renderProfile(profile);
+    const image = new Resvg(Buffer.from(svg), {
+      fitTo: { mode: 'width', value: 960 },
+      font: { loadSystemFonts: false },
+    }).render();
+    const { pixels, width } = image;
+    let bright = 0;
+    let total = 0;
+    // Buildings and monkeys occupy roughly the bottom 70px of the 500px scene.
+    for (let y = 430; y < 500; y += 1) {
+      for (let x = 0; x < 960; x += 1) {
+        const index = (y * width + x) * 4;
+        const luminance =
+          ((pixels[index] ?? 0) + (pixels[index + 1] ?? 0) + (pixels[index + 2] ?? 0)) / 3;
+        if (luminance > 60) bright += 1;
+        total += 1;
+      }
+    }
+    const ratio = bright / total;
+    assert.ok(ratio > 0.2, `${profile} rasterizes too dark: ${(ratio * 100).toFixed(1)}% bright`);
+  }
+
+  assert.match(renderProfile('stone'), /<rect class="night"[^>]*opacity="0"/);
+  assert.match(renderProfile('space'), /<rect class="night"[^>]*opacity="0.35"/);
 });
 
 test('scene labels and age-specific details are present', () => {

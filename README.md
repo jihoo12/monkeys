@@ -28,7 +28,7 @@ The simulation is deterministic. The same contribution history always produces e
 - **Reusable composite GitHub Action** at the repository root. Consumers use `jihoo12/monkeys@v1` without checking out this code, installing dependencies, or touching their `package.json`.
 - **GitHub GraphQL fetcher** with normalized daily contribution data and stats.
 - **Deterministic simulation engine**: bananas, population, food, capacity, buildings, upgrades, ages, famines, streaks, and chronicle events.
-- **Pixel-art SVG renderer**: 960×660 scene, 5×7 path-based pixel font, age-specific palettes, 8 building plots with 5 visual tiers each, 14 hand-placed monkey spots, and a compact HUD.
+- **Pixel-art SVG renderer**: a 960×500 scene plus a ~160px HUD inside a 960×660 canvas, 5×7 path-based pixel font, age-specific palettes, 8 building plots with 5 visual tiers each, 14 hand-placed monkey spots, and a compact HUD.
 - **CSS-only animation**: walking, bobbing, tail wags, working arms, smoke, fire, clouds, windmills, turbines, Ferris wheels, orbiting bananas, rocket flames, stars, day/night, fireflies, and speech bubbles.
 - **Reproducible demos** for five ages: stone, medieval, industrial, modern, and space.
 - **Local preview server** that mimics GitHub's light and dark README contexts.
@@ -200,7 +200,7 @@ The engine walks the days in order:
 
 ### 3. Render
 
-The renderer draws a 960×660 pixel-art scene plus a 150px HUD. Every visible element is an inline SVG shape, path, or group. Text is rendered as vector paths using a tiny 5×7 pixel font, so it does not depend on system fonts. Animation is plain CSS inside the SVG.
+The renderer draws a 960×500 pixel-art scene plus a ~160px HUD inside a 960×660 canvas. Every visible element is an inline SVG shape, path, or group. Text is rendered as vector paths using a tiny 5×7 pixel font, so it does not depend on system fonts. Animation is plain CSS inside the SVG.
 
 ### 4. Publish
 
@@ -239,6 +239,7 @@ The HUD shows the current age, level, population, capacity, bananas, daily incom
 | `npm run generate:demo` | Generate the space-age example SVG. |
 | `npm run generate -- --user <login>` | Generate from real GitHub data. |
 | `npm run generate:gallery` | Regenerate all five age SVGs and `examples/gallery.html`. |
+| `npm run check:examples` | Regenerate the demo and gallery, then fail if checked-in examples drift. |
 | `npm run preview` | Serve the local GitHub-style preview at `127.0.0.1:4321`. |
 | `npm test` | Run the Node test suite, including the action tests. |
 | `npm run test:action` | Run only the action and consumer-workspace tests. |
@@ -399,6 +400,7 @@ The test suite covers:
 - Determinism of both simulation and SVG output.
 - GraphQL request shape, day normalization, missing days, level mapping, and error paths.
 - Static-mode removal of all animations.
+- A rasterized first-frame check that keeps the village visible when CSS animation is ignored.
 - Escaping of user-controlled text in SVG metadata.
 - Compatibility rejection of scripts, external assets, event handlers, imports, and fonts.
 - CLI generation, JSON output, help, static mode, and unknown-option handling.

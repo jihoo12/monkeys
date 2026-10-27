@@ -127,8 +127,8 @@ instance uses a different path:
 
 - `jihoo12/monkeys@v1` follows the latest compatible 1.x release.
 - Pin `jihoo12/monkeys@v1.0.0` or a commit SHA for reproducible builds.
-- The `v1` tag is moved only as part of a deliberate release. The daily
-  generation workflow and CI never move tags. See
+- The `v1` tag is moved only as part of a deliberate release. The generation
+  workflow and CI never move tags. See
   [releasing.md](releasing.md) for the exact commands.
 
 ## Validation

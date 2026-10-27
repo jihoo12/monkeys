@@ -12,6 +12,7 @@
     "generate": "node --env-file-if-exists=.env src/cli.ts",
     "generate:demo": "node src/cli.ts --demo --out examples/monkey-civilization.svg",
     "generate:gallery": "node scripts/generate-gallery.ts",
+    "check:examples": "npm run generate:demo && npm run generate:gallery && git diff --exit-code -- examples",
     "preview": "node src/preview.ts",
     "test": "node --test tests/*.test.ts",
     "test:action": "node --test tests/action.test.ts",

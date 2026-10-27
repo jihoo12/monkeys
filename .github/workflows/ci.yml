@@ -35,10 +35,8 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: Generate the demo and gallery
-        run: |
-          npm run generate:demo
-          npm run generate:gallery
+      - name: Generate and verify examples
+        run: npm run check:examples
 
       - name: Check SVG compatibility
         run: npm run check:svg
