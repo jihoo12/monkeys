@@ -30,13 +30,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Build and stage gallery
+        run: |
+          npm ci
+          npm run generate:gallery
+          mkdir -p site
+          cp examples/gallery.html site/index.html
+          cp -R examples/ages site/ages
+          test -s site/index.html
+          for age in stone medieval industrial modern space; do
+            test -s "site/ages/$age.svg"
+          done
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: 'examples/gallery.html'
+          # Upload the directory containing index.html and the age SVG assets.
+          path: 'site'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
