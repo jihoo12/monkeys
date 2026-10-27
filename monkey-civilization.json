@@ -1,12 +1,12 @@
 {
   "username": "jihoo12",
-  "seed": "498dc14e",
+  "seed": "bf314f0b",
   "age": "SPACE AGE",
   "level": 50,
   "population": 32,
   "capacity": 32,
-  "bananas": 97477,
-  "contributions": 5434,
+  "bananas": 97664,
+  "contributions": 5442,
   "activeDays": 247,
   "buildings": [
     {
@@ -50,5 +50,5 @@
       "builtOnDay": 231
     }
   ],
-  "lastEvent": "DAY 365: The future is bright and sticky. The bananas are proud."
+  "lastEvent": "DAY 365: The village clock is correct twice a day. The monkeys celebrate both times. OCT 27."
 }
