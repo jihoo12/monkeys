@@ -21,7 +21,7 @@
 
 Monkey Civilization turns a year of GitHub contributions into a tiny evolving village. Every commit becomes bananas. Bananas feed monkeys, fund buildings, and push the tribe from a campfire to a space elevator. The output is a single self-contained SVG with CSS-only animation: no JavaScript, no external fonts, no backend, and no runtime dependencies.
 
-The simulation is deterministic. The same contribution history always produces exactly the same monkeys, buildings, events, colors, and layout. A daily GitHub Action refreshes the SVG from the last 365 days of contributions.
+The simulation is deterministic. The same contribution history always produces exactly the same monkeys, buildings, events, colors, and layout. A GitHub Action can refresh the SVG from the last 365 days of contributions when its workflow runs.
 
 ## What is in the box
 
@@ -34,7 +34,7 @@ The simulation is deterministic. The same contribution history always produces e
 - **Local preview server** that mimics GitHub's light and dark README contexts.
 - **Compatibility checker** for the SVG subset that GitHub renders reliably inside `<img>`.
 - **Tests** for determinism, simulation invariants, GraphQL parsing, rendering, CLI behavior, compatibility rules, and the action running from a separate consumer workspace.
-- **Daily GitHub Actions workflow** that tests, generates, and commits the SVG.
+- **GitHub Actions workflow** that tests, generates, and commits the SVG on code changes or manual dispatch.
 
 ## Add it to your repository
 
@@ -218,7 +218,7 @@ username + from + to + every "date:count" pair
 
 That seed drives the RNG used for monkey colors, accessories, jokes, and scene details. The demo histories also end on a fixed date (`2026-10-26`) so the checked-in examples never drift.
 
-Real daily runs are deterministic **for a given window**. Because the window slides forward each day, the civilization changes when old contributions fall out of the 365-day range.
+Real-data runs are deterministic **for a given window**. Because the window slides forward each day, the civilization changes when old contributions fall out of the 365-day range.
 
 ## Ages
 
@@ -268,7 +268,7 @@ A Markdown image works too:
 
 ### Cache busting
 
-GitHub's Camo image proxy caches by URL. A daily commit changes the file contents but not the URL, so the README can keep showing an old frame. If that happens, append a version query string and update it when you want a refresh:
+GitHub's Camo image proxy caches by URL. Updating the SVG changes its file contents but not the URL, so the README can keep showing an old frame. If that happens, append a version query string and update it when you want a refresh:
 
 ```html
 <img src="https://raw.githubusercontent.com/YOUR_NAME/YOUR_REPO/main/monkey-civilization.svg?v=2026-10-27" width="960" alt="...">
@@ -280,7 +280,7 @@ The SVG itself is cache-friendly: it contains no external assets and no network 
 
 This section covers the workflow that maintains **this** repository. To generate a civilization in your own repository, use the [reusable action](#add-it-to-your-repository) instead.
 
-The included workflow is [`.github/workflows/monkeys.yml`](.github/workflows/monkeys.yml). It runs every day at **03:17 UTC** and can also be triggered manually. A separate [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs typechecks, tests, and SVG compatibility checks on pull requests.
+The included workflow is [`.github/workflows/monkeys.yml`](.github/workflows/monkeys.yml). It runs on relevant pushes to `main` or `master`, or manually through `workflow_dispatch`. There is no daily schedule. A separate [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs typechecks, tests, and SVG compatibility checks on pull requests.
 
 It does the following:
 
