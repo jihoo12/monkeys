@@ -349,11 +349,12 @@ src/
     catalog.ts            8 plots, building names, costs
     engine.ts             deterministic civilization simulation
   render/
-    render.ts             SVG root, CSS, static fallback
-    scene.ts              sky, ground, path, monkeys, village props
+    render.ts             SVG root, gradients, animation CSS, static fallback
+    scene.ts              layered sky, mountains, ground, path, monkeys, weather
     buildings.ts          8 plots × 5 age tiers
-    hud.ts                counters, progress bar, chronicle ticker
-    sprites.ts            monkeys, tools, icons, speech bubbles
+    hud.ts                framed stat cards, age progress, chronicle ticker
+    sprites.ts            monkeys, outfits, tools, icons, speech bubbles
+    art.ts                shared pixel-art props: trees, windows, fire, clouds
     pixel-font.ts         path-based 5×7 font
     palette.ts            age-specific color palettes
     svg.ts                small SVG helpers

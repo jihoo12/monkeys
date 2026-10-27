@@ -30,7 +30,7 @@ Consequences:
 | Feature | Used? | Why |
 | --- | --- | --- |
 | `<svg>`, `<g>`, `<rect>`, `<path>`, `<circle>`, `<ellipse>`, `<polygon>` | Yes | Universally supported SVG geometry. |
-| `<linearGradient>` | Yes | One sky gradient, referenced by fragment ID. |
+| `<linearGradient>`, `<radialGradient>` | Yes | Sky, atmospheric glow and HUD surfaces, all referenced by internal fragment IDs. |
 | Inline `<style>` with `@keyframes` | Yes | Drives all motion without JavaScript. |
 | CSS `transform`, `opacity`, `animation` | Yes | Walking, bobbing, smoke, fire, stars, day/night. |
 | `transform-box: fill-box` | Yes | Rotates limbs and wheels around their own boxes. Supported by modern browsers; the static frame does not depend on it. |

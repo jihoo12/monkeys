@@ -12,6 +12,11 @@ export interface Palette {
   mountainFar: string;
   mountainMid: string;
   mountainNear: string;
+  /** Warm/cool atmospheric band that softens the horizon. */
+  haze: string;
+  /** Far and mid silhouette colors used for layered depth. */
+  silhouette: string;
+  silhouette2: string;
   jungle: string;
   jungleDark: string;
   jungleLight: string;
@@ -23,6 +28,8 @@ export interface Palette {
   path: string;
   pathDark: string;
   pathLight: string;
+  water: string;
+  waterLight: string;
   stone: string;
   stoneDark: string;
   stoneLight: string;
@@ -60,6 +67,9 @@ export interface Palette {
   shadow: string;
   hudBg: string;
   hudBg2: string;
+  hudPanel: string;
+  hudPanelLight: string;
+  hudInset: string;
   hudBorder: string;
   hudText: string;
   hudDim: string;
@@ -102,6 +112,9 @@ const PALETTES: Record<AgeId, Palette> = {
     mountainFar: '#9bbf8a',
     mountainMid: '#7fa876',
     mountainNear: '#5f8c58',
+    haze: '#c6e6cd',
+    silhouette: '#4f7a68',
+    silhouette2: '#3d6556',
     jungle: '#3f7d4e',
     jungleDark: '#2c5c3a',
     jungleLight: '#5b9a63',
@@ -113,6 +126,8 @@ const PALETTES: Record<AgeId, Palette> = {
     path: '#c9a06a',
     pathDark: '#a67c4f',
     pathLight: '#e0bd86',
+    water: '#5a8fa8',
+    waterLight: '#8fc4d8',
     stone: '#8b8b8b',
     stoneDark: '#5e5e63',
     stoneLight: '#b8b8b8',
@@ -137,6 +152,9 @@ const PALETTES: Record<AgeId, Palette> = {
     accentDark: '#a87916',
     window: '#ffd166',
     windowGlow: '#ffb703',
+    hudPanel: '#1d1526',
+    hudPanelLight: '#2b2038',
+    hudInset: '#100b16',
     hudBorder: '#ffcc4d',
     hudAccent: '#ffcc4d',
     hudAccent2: '#7bd389',
@@ -157,6 +175,9 @@ const PALETTES: Record<AgeId, Palette> = {
     mountainFar: '#a7a06f',
     mountainMid: '#8d8a5f',
     mountainNear: '#6f744c',
+    haze: '#e0dcb0',
+    silhouette: '#64705a',
+    silhouette2: '#4f5a48',
     jungle: '#4f7a3a',
     jungleDark: '#33552a',
     jungleLight: '#6c9a4f',
@@ -168,6 +189,8 @@ const PALETTES: Record<AgeId, Palette> = {
     path: '#d1b07a',
     pathDark: '#a88555',
     pathLight: '#e7cb98',
+    water: '#5f8f8a',
+    waterLight: '#9ccfc8',
     stone: '#a09a8c',
     stoneDark: '#6f6a60',
     stoneLight: '#c9c2b0',
@@ -192,6 +215,9 @@ const PALETTES: Record<AgeId, Palette> = {
     accentDark: '#9c5e2c',
     window: '#ffc857',
     windowGlow: '#ff9f43',
+    hudPanel: '#1c1620',
+    hudPanelLight: '#2c2230',
+    hudInset: '#100c14',
     hudBorder: '#f0a35e',
     hudAccent: '#f0a35e',
     hudAccent2: '#b7d36b',
@@ -212,6 +238,9 @@ const PALETTES: Record<AgeId, Palette> = {
     mountainFar: '#8a8a7a',
     mountainMid: '#757564',
     mountainNear: '#5f5f50',
+    haze: '#c9bda0',
+    silhouette: '#565a52',
+    silhouette2: '#454840',
     jungle: '#5a6b3f',
     jungleDark: '#3f4c2c',
     jungleLight: '#778a50',
@@ -223,6 +252,8 @@ const PALETTES: Record<AgeId, Palette> = {
     path: '#b99a6a',
     pathDark: '#8f744e',
     pathLight: '#d1b485',
+    water: '#556b6a',
+    waterLight: '#8ea8a0',
     stone: '#8a8378',
     stoneDark: '#5e594f',
     stoneLight: '#b0a898',
@@ -247,6 +278,9 @@ const PALETTES: Record<AgeId, Palette> = {
     accentDark: '#8a5f0a',
     window: '#ffb703',
     windowGlow: '#ff8c00',
+    hudPanel: '#191519',
+    hudPanelLight: '#272127',
+    hudInset: '#0d0a0d',
     hudBorder: '#e0a020',
     hudAccent: '#e0a020',
     hudAccent2: '#b87333',
@@ -267,6 +301,9 @@ const PALETTES: Record<AgeId, Palette> = {
     mountainFar: '#8fb3a0',
     mountainMid: '#7a9f8a',
     mountainNear: '#5f846f',
+    haze: '#c4ecf8',
+    silhouette: '#4f7a78',
+    silhouette2: '#3f6666',
     jungle: '#3f8f5a',
     jungleDark: '#2b6b42',
     jungleLight: '#5fb87a',
@@ -278,6 +315,8 @@ const PALETTES: Record<AgeId, Palette> = {
     path: '#c9c9c9',
     pathDark: '#9a9a9a',
     pathLight: '#e8e8e8',
+    water: '#3f8fb0',
+    waterLight: '#8fd8e8',
     stone: '#a8b0b8',
     stoneDark: '#6f7880',
     stoneLight: '#d8e0e8',
@@ -302,6 +341,9 @@ const PALETTES: Record<AgeId, Palette> = {
     accentDark: '#1f6a9a',
     window: '#9be7ff',
     windowGlow: '#4aa3df',
+    hudPanel: '#101a27',
+    hudPanelLight: '#1b2b3d',
+    hudInset: '#081018',
     hudBorder: '#4aa3df',
     hudAccent: '#4aa3df',
     hudAccent2: '#7bd389',
@@ -322,6 +364,9 @@ const PALETTES: Record<AgeId, Palette> = {
     mountainFar: '#3a2b5a',
     mountainMid: '#2f224a',
     mountainNear: '#241a3d',
+    haze: '#4a2f6a',
+    silhouette: '#2a2148',
+    silhouette2: '#201a3a',
     jungle: '#1f3a4a',
     jungleDark: '#132633',
     jungleLight: '#2f5a6a',
@@ -333,6 +378,8 @@ const PALETTES: Record<AgeId, Palette> = {
     path: '#6b5a8a',
     pathDark: '#4a3d63',
     pathLight: '#8a78a8',
+    water: '#2a4a6a',
+    waterLight: '#4aa3c8',
     stone: '#6a6a8a',
     stoneDark: '#44445f',
     stoneLight: '#9494b8',
@@ -357,6 +404,9 @@ const PALETTES: Record<AgeId, Palette> = {
     accentDark: '#6a4aa8',
     window: '#6ee7f9',
     windowGlow: '#b388ff',
+    hudPanel: '#140d24',
+    hudPanelLight: '#22163a',
+    hudInset: '#08040f',
     hudBorder: '#b388ff',
     hudAccent: '#b388ff',
     hudAccent2: '#6ee7f9',
@@ -368,4 +418,47 @@ const PALETTES: Record<AgeId, Palette> = {
 
 export function paletteFor(age: AgeDefinition): Palette {
   return PALETTES[age.id];
+}
+
+/**
+ * Mix a hex color toward white (positive amount) or black (negative amount).
+ * Keeping derived shades procedural lets the art use a small, coherent palette
+ * per age while still having enough tones for convincing pixel shading.
+ */
+export function shade(hex: string, amount: number): string {
+  const value = hex.replace('#', '');
+  if (value.length !== 6) return hex;
+  const r = Number.parseInt(value.slice(0, 2), 16);
+  const g = Number.parseInt(value.slice(2, 4), 16);
+  const b = Number.parseInt(value.slice(4, 6), 16);
+  if (![r, g, b].every(Number.isFinite)) return hex;
+  const target = amount >= 0 ? 255 : 0;
+  const t = Math.min(1, Math.abs(amount));
+  const mix = (channel: number): string =>
+    Math.round(channel + (target - channel) * t)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${mix(r)}${mix(g)}${mix(b)}`;
+}
+
+/** Convert a hex color to an rgba() string, for translucent light pools. */
+export function alpha(hex: string, opacity: number): string {
+  const value = hex.replace('#', '');
+  if (value.length !== 6) return hex;
+  const r = Number.parseInt(value.slice(0, 2), 16);
+  const g = Number.parseInt(value.slice(2, 4), 16);
+  const b = Number.parseInt(value.slice(4, 6), 16);
+  if (![r, g, b].every(Number.isFinite)) return hex;
+  return `rgba(${r}, ${g}, ${b}, ${Math.max(0, Math.min(1, opacity))})`;
+}
+
+/** Pick a readable foreground (ink) color for a filled chip. */
+export function inkOn(hex: string): string {
+  const value = hex.replace('#', '');
+  if (value.length !== 6) return '#fff4d6';
+  const r = Number.parseInt(value.slice(0, 2), 16);
+  const g = Number.parseInt(value.slice(2, 4), 16);
+  const b = Number.parseInt(value.slice(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.58 ? '#241a20' : '#fff4d6';
 }
