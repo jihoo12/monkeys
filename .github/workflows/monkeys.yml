@@ -1,10 +1,6 @@
 name: Monkey Civilization
 
 on:
-  schedule:
-    # GitHub schedules are UTC. This is intentionally off the hour to avoid
-    # the busiest part of the Actions queue.
-    - cron: '17 3 * * *'
   workflow_dispatch:
     inputs:
       username:
