@@ -1,0 +1,73 @@
+name: Monkey Civilization
+description: Generate a deterministic, contribution-powered pixel-art monkey civilization SVG.
+author: jihoo12
+
+branding:
+  icon: git-branch
+  color: yellow
+
+inputs:
+  github_token:
+    description: >-
+      Token used to read the GitHub contribution calendar. Usually
+      secrets.GITHUB_TOKEN. Use a classic PAT with read:user when the automatic
+      token cannot read the calendar.
+    required: true
+  username:
+    description: GitHub login to simulate. Defaults to the repository owner.
+    required: false
+  output:
+    description: SVG output path, relative to the caller's workspace.
+    required: false
+    default: monkey-civilization.svg
+  json_output:
+    description: >-
+      Optional JSON summary path, relative to the caller's workspace.
+      Leave empty to skip the summary.
+    required: false
+    default: ''
+  animate:
+    description: Emit CSS animations. Set to false for a fully static SVG.
+    required: false
+    default: 'true'
+
+outputs:
+  svg_path:
+    description: Absolute path to the generated SVG.
+    value: ${{ steps.generate.outputs.svg_path }}
+  json_path:
+    description: Absolute path to the JSON summary, or empty when disabled.
+    value: ${{ steps.generate.outputs.json_path }}
+  age:
+    description: Current civilization age, for example SPACE AGE.
+    value: ${{ steps.generate.outputs.age }}
+  population:
+    description: Number of monkeys in the civilization.
+    value: ${{ steps.generate.outputs.population }}
+  contributions:
+    description: Contributions counted in the 365-day window.
+    value: ${{ steps.generate.outputs.contributions }}
+  buildings:
+    description: Number of constructed buildings.
+    value: ${{ steps.generate.outputs.buildings }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js 24
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+
+    - name: Generate monkey civilization
+      id: generate
+      shell: bash
+      env:
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_USERNAME: ${{ inputs.username }}
+        INPUT_OUTPUT: ${{ inputs.output }}
+        INPUT_JSON_OUTPUT: ${{ inputs.json_output }}
+        INPUT_ANIMATE: ${{ inputs.animate }}
+      # GITHUB_ACTION_PATH is the runner's environment form of
+      # github.action_path, so imports resolve inside the action checkout.
+      run: node "$GITHUB_ACTION_PATH/src/action.ts"

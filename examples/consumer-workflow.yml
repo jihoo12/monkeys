@@ -1,0 +1,45 @@
+# Copy this file to .github/workflows/monkeys.yml in any repository.
+# It generates the SVG with jihoo12/monkeys@v1 and commits it back.
+name: Monkey Civilization
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: monkey-civilization
+  cancel-in-progress: true
+
+jobs:
+  monkeys:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Generate monkey civilization
+        # Use @v1 after the first release, or @main / a commit SHA before then.
+        uses: jihoo12/monkeys@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+          output: monkey-civilization.svg
+          json_output: monkey-civilization.json
+          animate: true
+
+      - name: Commit the refreshed civilization
+        run: |
+          git add monkey-civilization.svg monkey-civilization.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "monkey-civilization[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: refresh monkey civilization $(date -u +%Y-%m-%d)"
+          git push

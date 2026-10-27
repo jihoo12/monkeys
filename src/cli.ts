@@ -1,10 +1,6 @@
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
-import { fetchContributionHistory } from './data/contributions.ts';
-import { DEMO_PROFILES, demoHistory, type DemoProfile } from './data/demo.ts';
-import { simulateCivilization } from './sim/engine.ts';
-import { renderCivilization } from './render/render.ts';
-import { checkSvgCompatibility, formatCompatibilityReport } from './compat.ts';
+import { formatCompatibilityReport } from './compat.ts';
+import { DEMO_PROFILES, type DemoProfile } from './data/demo.ts';
+import { generateCivilization } from './generate.ts';
 import { formatNumber } from './util/date.ts';
 
 interface CliOptions {
@@ -50,46 +46,17 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     return 0;
   }
 
-  const history = options.demo
-    ? demoHistory(options.demo)
-    : await loadRealHistory(options);
-  const state = simulateCivilization(history);
-  const svg = renderCivilization(state, history, { animation: options.animation });
-  const report = checkSvgCompatibility(svg);
-
-  const outPath = resolve(options.out);
-  await mkdir(dirname(outPath), { recursive: true });
-  await writeFile(outPath, `${svg}\n`, 'utf8');
-
-  if (options.json) {
-    const jsonPath = resolve(options.json);
-    await mkdir(dirname(jsonPath), { recursive: true });
-    await writeFile(
-      jsonPath,
-      `${JSON.stringify(
-        {
-          username: state.username,
-          seed: state.seed,
-          age: state.age.name,
-          level: state.level,
-          population: state.population,
-          capacity: state.capacity,
-          bananas: Math.round(state.bananas),
-          contributions: state.totalContributions,
-          activeDays: state.stats.activeDays,
-          buildings: state.slots.filter((slot) => slot.unlocked).map((slot) => ({
-            id: slot.id,
-            level: slot.level,
-            builtOnDay: slot.builtOnDay,
-          })),
-          lastEvent: state.lastEvent.text,
-        },
-        null,
-        2,
-      )}\n`,
-      'utf8',
-    );
-  }
+  const result = await generateCivilization({
+    out: options.out,
+    username: options.user,
+    token: options.token,
+    demo: options.demo,
+    from: options.from,
+    to: options.to,
+    json: options.json,
+    animation: options.animation,
+  });
+  const { state, report, outPath } = result;
 
   console.log(`Monkey Civilization generated: ${outPath}`);
   console.log(
@@ -175,26 +142,6 @@ function parseArgs(argv: string[]): CliOptions {
     }
   }
   return options;
-}
-
-async function loadRealHistory(options: CliOptions) {
-  if (!options.user) {
-    throw new Error(
-      'A GitHub username is required. Use --user <login>, set GITHUB_USER, or run --demo.',
-    );
-  }
-  if (!options.token) {
-    throw new Error(
-      'A GitHub token is required for the GraphQL API. Set GITHUB_TOKEN, or run --demo for reproducible demo data.',
-    );
-  }
-  console.log(`Fetching contribution history for @${options.user}...`);
-  return fetchContributionHistory({
-    username: options.user,
-    token: options.token,
-    from: options.from,
-    to: options.to,
-  });
 }
 
 function isDemoProfile(value: string): value is DemoProfile {

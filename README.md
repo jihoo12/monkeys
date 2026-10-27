@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="examples/gallery.html">Age gallery</a> ·
+  <a href="#add-it-to-your-repository">Use as an Action</a> ·
   <a href="docs/compatibility.md">GitHub compatibility notes</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#embed-it-in-your-profile-readme">Embed it</a>
@@ -24,6 +25,7 @@ The simulation is deterministic. The same contribution history always produces e
 
 ## What is in the box
 
+- **Reusable composite GitHub Action** at the repository root. Consumers use `jihoo12/monkeys@v1` without checking out this code, installing dependencies, or touching their `package.json`.
 - **GitHub GraphQL fetcher** with normalized daily contribution data and stats.
 - **Deterministic simulation engine**: bananas, population, food, capacity, buildings, upgrades, ages, famines, streaks, and chronicle events.
 - **Pixel-art SVG renderer**: 960×660 scene, 5×7 path-based pixel font, age-specific palettes, 8 building plots with 5 visual tiers each, 14 hand-placed monkey spots, and a compact HUD.
@@ -31,8 +33,67 @@ The simulation is deterministic. The same contribution history always produces e
 - **Reproducible demos** for five ages: stone, medieval, industrial, modern, and space.
 - **Local preview server** that mimics GitHub's light and dark README contexts.
 - **Compatibility checker** for the SVG subset that GitHub renders reliably inside `<img>`.
-- **Tests** for determinism, simulation invariants, GraphQL parsing, rendering, CLI behavior, and compatibility rules.
+- **Tests** for determinism, simulation invariants, GraphQL parsing, rendering, CLI behavior, compatibility rules, and the action running from a separate consumer workspace.
 - **Daily GitHub Actions workflow** that tests, generates, and commits the SVG.
+
+## Add it to your repository
+
+No install, no `package.json` changes, no build step. Copy this workflow to `.github/workflows/monkeys.yml`:
+
+```yaml
+name: Monkey Civilization
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  monkeys:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jihoo12/monkeys@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+      - run: |
+          git add monkey-civilization.svg
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "monkey-civilization[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: refresh monkey civilization"
+          git push
+```
+
+Then embed the generated file:
+
+```html
+<img src="https://raw.githubusercontent.com/USER/REPO/main/monkey-civilization.svg" width="960" alt="My monkey civilization">
+```
+
+That is the whole setup. The action runs from its own checkout, installs nothing into your project, and writes the SVG into your workspace. A full example, including the JSON summary, is in [`examples/consumer-workflow.yml`](examples/consumer-workflow.yml).
+
+> Until the maintainer publishes the first release, point `uses:` at `jihoo12/monkeys@main` (or a commit SHA). After release, `@v1` is the stable major tag. See [docs/releasing.md](docs/releasing.md).
+
+### Action inputs
+
+| Input | Required | Default | Meaning |
+| --- | --- | --- | --- |
+| `github_token` | yes | — | Token for the GraphQL API. Usually `${{ secrets.GITHUB_TOKEN }}`. |
+| `username` | no | repository owner | GitHub login to simulate. |
+| `output` | no | `monkey-civilization.svg` | SVG path, relative to your workspace. |
+| `json_output` | no | empty | Optional JSON summary path. |
+| `animate` | no | `true` | Set to `false` for a fully static SVG. |
+
+Outputs: `svg_path`, `json_path`, `age`, `population`, `contributions`, and `buildings`.
+
+> **Token note:** the automatic `GITHUB_TOKEN` works for many public calendars. If GitHub rejects the query, pass a classic PAT with `read:user` instead: `github_token: ${{ secrets.MONKEY_TOKEN }}`. Private contribution counts also require a token that can see those repositories.
+
+See [docs/action.md](docs/action.md) for the full action reference and [docs/releasing.md](docs/releasing.md) for maintainer release steps.
 
 ## Quick start
 
@@ -179,7 +240,8 @@ The HUD shows the current age, level, population, capacity, bananas, daily incom
 | `npm run generate -- --user <login>` | Generate from real GitHub data. |
 | `npm run generate:gallery` | Regenerate all five age SVGs and `examples/gallery.html`. |
 | `npm run preview` | Serve the local GitHub-style preview at `127.0.0.1:4321`. |
-| `npm test` | Run the Node test suite. |
+| `npm test` | Run the Node test suite, including the action tests. |
+| `npm run test:action` | Run only the action and consumer-workspace tests. |
 | `npm run typecheck` | Run TypeScript in no-emit mode. |
 | `npm run check:svg` | Run the compatibility checker on the example SVG. |
 | `npm run render:png` | Rasterize the example SVG for screenshots. |
@@ -215,6 +277,8 @@ GitHub's Camo image proxy caches by URL. A daily commit changes the file content
 The SVG itself is cache-friendly: it contains no external assets and no network requests.
 
 ## GitHub Actions
+
+This section covers the workflow that maintains **this** repository. To generate a civilization in your own repository, use the [reusable action](#add-it-to-your-repository) instead.
 
 The included workflow is [`.github/workflows/monkeys.yml`](.github/workflows/monkeys.yml). It runs every day at **03:17 UTC** and can also be triggered manually. A separate [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs typechecks, tests, and SVG compatibility checks on pull requests.
 
@@ -269,8 +333,11 @@ The generated SVG is designed for the restrictive context of a GitHub README ima
 ## Project layout
 
 ```text
+action.yml                reusable composite GitHub Action
 src/
   cli.ts                  command-line entry point
+  action.ts               GitHub Action entry point
+  generate.ts             shared fetch -> simulate -> render pipeline
   preview.ts              local GitHub-style preview server
   compat.ts               SVG compatibility checker
   types.ts                shared data contracts
@@ -303,12 +370,16 @@ tests/
   render.test.ts          rendering, static mode, escaping
   compat.test.ts          compatibility rules
   cli.test.ts             end-to-end CLI behavior
+  action.test.ts          action contract + separate consumer workspace
 examples/
   monkey-civilization.svg animated space-age example
   ages/                   one SVG per age
   gallery.html            browsable age gallery
+  consumer-workflow.yml   copy-paste workflow for any repository
 docs/
   compatibility.md        GitHub rendering notes
+  action.md               reusable action reference
+  releasing.md            maintainer release and tag commands
 ```
 
 ## Testing
@@ -330,6 +401,8 @@ The test suite covers:
 - Escaping of user-controlled text in SVG metadata.
 - Compatibility rejection of scripts, external assets, event handlers, imports, and fonts.
 - CLI generation, JSON output, help, static mode, and unknown-option handling.
+- The action contract: composite metadata, Node 24, documented inputs/outputs, and no dependency installs.
+- A separate consumer workspace: action checkout in one directory, caller repository in another, output paths, GitHub outputs, step summary, token errors, and an untouched `package.json`.
 
 ## License
 

@@ -14,6 +14,7 @@
     "generate:gallery": "node scripts/generate-gallery.ts",
     "preview": "node src/preview.ts",
     "test": "node --test tests/*.test.ts",
+    "test:action": "node --test tests/action.test.ts",
     "typecheck": "tsc --noEmit",
     "check:svg": "node scripts/check-svg.ts",
     "render:png": "node scripts/render-png.ts examples/monkey-civilization.svg examples/monkey-civilization.png"
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "@types/node": "^24.10.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "yaml": "^2.9.1"
   }
 }
