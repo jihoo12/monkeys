@@ -1,0 +1,82 @@
+name: Monkey Civilization
+
+on:
+  schedule:
+    # GitHub schedules are UTC. This is intentionally off the hour to avoid
+    # the busiest part of the Actions queue.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      username:
+        description: GitHub login to simulate (defaults to the repository owner)
+        required: false
+        default: ''
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/monkeys.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: monkey-civilization
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    name: Generate and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Generate civilization
+        env:
+          # Prefer a classic PAT with read:user if the automatic token cannot
+          # read the contribution calendar.
+          GITHUB_TOKEN: ${{ secrets.MONKEY_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.event.inputs.username || vars.GITHUB_USER || github.repository_owner }}
+        run: |
+          npm run generate -- \
+            --user "$GITHUB_USER" \
+            --out monkey-civilization.svg \
+            --json monkey-civilization.json
+
+      - name: Verify SVG compatibility
+        run: npm run check:svg -- monkey-civilization.svg
+
+      - name: Commit refreshed files
+        run: |
+          git add monkey-civilization.svg monkey-civilization.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "monkey-civilization[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: refresh monkey civilization $(date -u +%Y-%m-%d)"
+          git push

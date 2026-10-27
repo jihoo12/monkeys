@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Typecheck, test and render
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Generate the demo and gallery
+        run: |
+          npm run generate:demo
+          npm run generate:gallery
+
+      - name: Check SVG compatibility
+        run: npm run check:svg
+
+      - name: Upload example SVGs
+        uses: actions/upload-artifact@v4
+        with:
+          name: monkey-civilization-examples
+          path: |
+            examples/monkey-civilization.svg
+            examples/ages/*.svg
+            examples/gallery.html
+          if-no-files-found: error
