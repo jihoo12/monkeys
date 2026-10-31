@@ -10,8 +10,9 @@ export interface RenderOptions {
   /** Disable CSS animation (useful for deterministic screenshots/tests). */
   animation?: boolean;
   /**
-   * Holiday theme. `auto` (the default) picks the theme from the last day of
-   * the contribution window, `none` disables it, or pass an explicit id.
+   * Holiday theme. `auto` (the default) picks a widely shared holiday from the
+   * last day of the contribution window, `all` also picks regional holidays,
+   * `none` disables it, or pass an explicit id.
    */
   holiday?: HolidayOption;
 }

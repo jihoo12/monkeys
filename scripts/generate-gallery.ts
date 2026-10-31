@@ -48,6 +48,7 @@ for (const holiday of HOLIDAYS) {
   <div class="meta">
     <strong>${holiday.name}</strong>
     <span>${holiday.greeting}</span>
+    <span>${holiday.regional ? 'Regional: opt in with holiday: all or its id' : 'Picked automatically on its date'}</span>
     <span>${report.ok ? 'GitHub compatibility: pass' : 'GitHub compatibility: FAIL'}</span>
   </div>
 </article>`);
@@ -83,7 +84,7 @@ const html = `<!doctype html>
 <h2 id="ages">Ages</h2>
 <div class="grid">${cards.join('\n')}</div>
 <h2 id="holiday-themes">Holiday themes</h2>
-<p>Every theme is selected from the generation date. These previews force each theme on the same space-age civilization.</p>
+<p>The default <code>auto</code> picks widely shared holidays from the generation date; regional themes are opt-in with <code>all</code> or their id. These previews force each theme on the same space-age civilization.</p>
 <div class="grid">${holidayCards.join('\n')}</div>
 </body>
 </html>`;

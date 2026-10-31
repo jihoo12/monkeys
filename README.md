@@ -31,7 +31,7 @@ The simulation is deterministic. The same contribution history always produces e
 - **Pixel-art SVG renderer**: a 960×500 scene plus a ~160px HUD inside a 960×660 canvas, 5×7 path-based pixel font, age-specific palettes, 8 building plots with 5 visual tiers each, 14 hand-placed monkey spots, and a compact HUD.
 - **CSS-only animation**: walking, bobbing, tail wags, working arms, smoke, fire, clouds, windmills, turbines, Ferris wheels, orbiting bananas, rocket flames, stars, day/night, fireflies, and speech bubbles.
 - **Reproducible demos** for five ages: stone, medieval, industrial, modern, and space.
-- **Date-driven holiday themes** for New Year, Valentine's Day, St. Patrick's Day, Easter, Independence Day, Halloween, Thanksgiving, and Christmas, each with its own palette, greeting, and pixel-art decorations.
+- **Date-driven holiday themes** for New Year, Valentine's Day, St. Patrick's Day, Easter, Independence Day, Halloween, Thanksgiving, and Christmas, each with its own palette, greeting, sky set piece, ground cover, pixel-art decorations, and monkey costumes. Themes tied to one country or faith are opt-in.
 - **Local preview server** that mimics GitHub's light and dark README contexts.
 - **Compatibility checker** for the SVG subset that GitHub renders reliably inside `<img>`.
 - **Tests** for determinism, simulation invariants, GraphQL parsing, rendering, CLI behavior, compatibility rules, and the action running from a separate consumer workspace.
@@ -89,7 +89,7 @@ That is the whole setup. The action runs from its own checkout, installs nothing
 | `output` | no | `monkey-civilization.svg` | SVG path, relative to your workspace. |
 | `json_output` | no | empty | Optional JSON summary path. |
 | `animate` | no | `true` | Set to `false` for a fully static SVG. |
-| `holiday` | no | `auto` | Holiday theme: `auto` uses the generation date, `none` disables it, or pass a theme id such as `halloween`. |
+| `holiday` | no | `auto` | Holiday theme: `auto` uses the generation date with widely shared holidays only, `all` adds regional holidays, `none` disables it, or pass a theme id such as `halloween`. |
 
 Outputs: `svg_path`, `json_path`, `age`, `population`, `contributions`, `buildings`, and `holiday`.
 
@@ -165,7 +165,7 @@ The CLI prints a summary, runs the compatibility checker, and exits non-zero if 
 | `--from`, `--to` | Inclusive UTC date window. Defaults to the last 365 days ending today. |
 | `--json <path>` | Also write a machine-readable summary. |
 | `--no-animation` | Emit a static SVG with no keyframes or animation declarations. |
-| `--holiday <theme>` | Holiday theme: `auto` (default), `none`, or a theme id. |
+| `--holiday <theme>` | Holiday theme: `auto` (default), `all`, `none`, or a theme id. |
 | `--help`, `-h` | Show help. |
 
 ## How it works
@@ -239,26 +239,31 @@ The HUD shows the current age, level, population, capacity, bananas, daily incom
 
 ## Holiday themes
 
-On a holiday, the civilization dresses up. The palette, the header greeting, and a layer of pixel-art decorations all change, while the simulation and the age stay exactly the same.
+On a holiday, the civilization dresses up. The palette, the header greeting, the sky, the ground, and the monkeys' costumes all change, while the simulation and the age stay exactly the same.
 
-| Theme | When | What changes |
-| --- | --- | --- |
-| New Year | Dec 31 – Jan 1 | Fireworks, confetti, champagne, gold palette |
-| Valentine's Day | Feb 14 | Floating hearts, balloons, rose bushes, pink palette |
-| St. Patrick's Day | Mar 17 | Rainbow, shamrocks, pot of gold, green palette |
-| Easter Sunday | Movable feast | Pastel eggs, bunting, bunny, basket |
-| Independence Day | Jul 4 | Fireworks, flags, red/white/blue palette |
-| Halloween | Oct 31 | Bats, ghosts, jack-o'-lanterns, purple/orange palette |
-| Thanksgiving | Fourth Thursday of November | Autumn leaves, pumpkins, corn, turkey, warm palette |
-| Christmas | Dec 24 – Dec 26 | Snow, garland, tree, presents, snowman, red/green palette |
+| Theme | When | Picked by | What changes |
+| --- | --- | --- | --- |
+| New Year | Dec 31 – Jan 1 | `auto` | Fireworks, year sign, confetti, party hats, gold palette |
+| Valentine's Day | Feb 14 | `auto` | Heart balloon, cupid, roses, heart glasses, pink palette |
+| Halloween | Oct 31 | `auto` | Harvest moon, witch, tombstones, witch hats, purple/orange palette |
+| Christmas | Dec 24 – Dec 26 | `auto` | Aurora, sleigh, snow, tree, Santa hats, red/green palette |
+| St. Patrick's Day | Mar 17 | `all` | Rainbow, gold, shamrocks, leprechaun hats, green palette |
+| Easter Sunday | Movable feast | `all` | Egg balloons, tulips, bunnies, bunny ears, pastel palette |
+| Independence Day | Jul 4 | `all` | Fireworks, flags, picnic, top hats, red/white/blue palette |
+| Thanksgiving | Fourth Thursday of November | `all` | Geese, cornucopia, pumpkins, pilgrim hats, warm palette |
 
 The theme is picked from the **last day of the contribution window**, which is today UTC for a normal run. It is deterministic: the same window always produces the same theme. Nothing reads the wall clock outside the window.
+
+The default `auto` only uses holidays that are widely shared across countries. Themes tied to one country or faith are regional: they appear on their dates only with `all`, or whenever you pass their id.
 
 Override or disable it with the CLI or action input:
 
 ```bash
 # Force a theme (useful for previews and screenshots)
 npm run generate -- --demo --holiday halloween --out halloween.svg
+
+# Include regional holidays on their dates
+npm run generate -- --user your-login --holiday all
 
 # Disable the automatic theme
 npm run generate -- --user your-login --holiday none
@@ -441,7 +446,7 @@ The test suite covers:
 - Age boundary values and progress clamping.
 - Simulation invariants: population ≤ capacity, non-negative bananas, valid plot states, visible monkeys drawn from the population, 8 plots, astronaut presence in the space age.
 - Determinism of both simulation and SVG output.
-- Holiday date matching (fixed dates, Easter computus, Thanksgiving), palette overrides, distinct themes, and auto/none overrides.
+- Holiday date matching (fixed dates, Easter computus, Thanksgiving), regional opt-in, palette overrides, distinct themes, costumes, and auto/all/none overrides.
 - GraphQL request shape, day normalization, missing days, level mapping, and error paths.
 - Static-mode removal of all animations.
 - A rasterized first-frame check that keeps the village visible when CSS animation is ignored.

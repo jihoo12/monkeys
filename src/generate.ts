@@ -22,8 +22,9 @@ export interface GenerateOptions {
   /** Set to false to emit a fully static SVG. Defaults to true. */
   animation?: boolean;
   /**
-   * Holiday theme: `auto` (default) uses the last day of the window, `none`
-   * disables it, or pass an explicit holiday id.
+   * Holiday theme: `auto` (default) uses the last day of the window and only
+   * widely shared holidays, `all` adds regional ones, `none` disables it, or
+   * pass an explicit holiday id.
    */
   holiday?: HolidayOption;
   /** Override the GraphQL endpoint (GitHub Enterprise, tests). */

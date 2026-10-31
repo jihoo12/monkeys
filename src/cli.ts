@@ -33,7 +33,8 @@ Options:
       --to <YYYY-MM-DD>    Last day of the contribution window (default: today UTC)
       --json <path>        Also write a small simulation summary as JSON
       --no-animation       Emit a static SVG (animations are progressive enhancement)
-      --holiday <theme>    Holiday theme: auto (default), none, or one of:
+      --holiday <theme>    Holiday theme: auto (default, widely shared holidays
+                           only), all (also regional holidays), none, or one of:
                            ${HOLIDAY_IDS.join(', ')}
   -h, --help               Show this help
 

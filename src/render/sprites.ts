@@ -4,6 +4,8 @@ import { shade } from './palette.ts';
 import { circle, ellipse, line, poly, rect } from './svg.ts';
 import { pixelText } from './pixel-font.ts';
 import { banana } from './art.ts';
+import { drawCostume, drawHelmetTopper } from './costumes.ts';
+import type { HolidayId } from './holidays.ts';
 
 export interface MonkeyDrawOptions {
   x: number;
@@ -20,6 +22,8 @@ export interface MonkeyDrawOptions {
   celebrate?: boolean;
   working?: boolean;
   facing?: 1 | -1;
+  /** Holiday costume worn over (or instead of) the age headgear. */
+  costume?: HolidayId;
 }
 
 interface Fur {
@@ -175,7 +179,7 @@ export function drawMonkey(monkey: MonkeyState, options: MonkeyDrawOptions): str
   inner.push(drawLegs(fur, outfit, ageId, monkey));
   inner.push(drawBody(fur, outfit, ageId, monkey));
   inner.push(drawArms(fur, outfit, ageId, monkey, palette));
-  inner.push(drawHead(fur, outfit, ageId, monkey, palette));
+  inner.push(drawHead(fur, outfit, ageId, monkey, palette, options.costume));
   inner.push(drawHeldItem(monkey, palette));
 
   const sprite = inner.join('');
@@ -338,6 +342,7 @@ function drawHead(
   ageId: AgeId,
   monkey: MonkeyState,
   palette: Palette,
+  costume?: HolidayId,
 ): string {
   const expression = Math.abs(monkey.id + monkey.role.length) % 5;
   const parts: string[] = [];
@@ -429,7 +434,7 @@ function drawHead(
   parts.push(rect(2, -33, 1, 1, fur.furLight));
 
   // Age-specific headgear and accessories.
-  parts.push(drawHeadgear(monkey, fur, outfit, ageId, palette));
+  parts.push(drawHeadgear(monkey, fur, outfit, ageId, palette, costume));
   return `<g class="head">${parts.join('')}</g>`;
 }
 
@@ -439,8 +444,17 @@ function drawHeadgear(
   outfit: Outfit,
   ageId: AgeId,
   palette: Palette,
+  costume?: HolidayId,
 ): string {
   const parts: string[] = [];
+  if (costume && monkey.accessory !== 'helmet') {
+    // Costumes replace hats; ear-level gear still reads underneath.
+    if (ageId === 'modern' || ageId === 'space') {
+      parts.push(drawHeadgear({ ...monkey, accessory: 'none' }, fur, outfit, ageId, palette));
+    }
+    parts.push(drawCostume(costume, monkey.id));
+    return parts.join('');
+  }
   if (monkey.accessory === 'helmet') {
     parts.push(
       `<g class="helmet">${circle(0, -26, 9, palette.glass, 'opacity="0.22"')}${circle(
@@ -455,7 +469,7 @@ function drawHeadgear(
         4,
         3,
         palette.metal,
-      )}${rect(-1, -37, 2, 2, palette.accent2)}</g>`,
+      )}${rect(-1, -37, 2, 2, palette.accent2)}${costume ? drawHelmetTopper(costume) : ''}</g>`,
     );
   } else if (monkey.accessory === 'hardhat') {
     const hat = ageId === 'space' ? palette.accent2 : '#f2b134';

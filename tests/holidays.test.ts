@@ -5,6 +5,7 @@ import { simulateCivilization } from '../src/sim/engine.ts';
 import { checkSvgCompatibility } from '../src/compat.ts';
 import { renderCivilization } from '../src/render/render.ts';
 import {
+  HOLIDAYS,
   HOLIDAY_IDS,
   applyHolidayPalette,
   holidayFor,
@@ -26,28 +27,45 @@ test('holidays are selected from fixed calendar dates', () => {
   assert.equal(holidayFor('2026-12-31')?.id, 'new-year');
   assert.equal(holidayFor('2027-01-01')?.id, 'new-year');
   assert.equal(holidayFor('2027-02-14')?.id, 'valentines');
-  assert.equal(holidayFor('2027-03-17')?.id, 'st-patricks');
-  assert.equal(holidayFor('2026-07-04')?.id, 'independence');
   assert.equal(holidayFor('2026-10-30'), null);
   assert.equal(holidayFor('2026-10-26'), null);
 });
 
+test('regional holidays are opt-in', () => {
+  const all = { includeRegional: true };
+  assert.equal(holidayFor('2027-03-17', all)?.id, 'st-patricks');
+  assert.equal(holidayFor('2026-07-04', all)?.id, 'independence');
+  for (const date of ['2027-03-17', '2026-07-04', '2026-04-05', '2026-11-26']) {
+    assert.equal(holidayFor(date), null, `${date} should stay neutral with auto`);
+  }
+  assert.equal(resolveHoliday('auto', '2026-07-04'), null);
+  assert.equal(resolveHoliday('all', '2026-07-04')?.id, 'independence');
+  assert.equal(resolveHoliday('all', '2026-10-31')?.id, 'halloween');
+  assert.equal(resolveHoliday('independence', '2026-10-31')?.id, 'independence');
+  assert.deepEqual(
+    HOLIDAYS.filter((holiday) => !holiday.regional).map((holiday) => holiday.id),
+    ['new-year', 'valentines', 'halloween', 'christmas'],
+  );
+});
+
 test('movable feasts resolve correctly', () => {
+  const all = { includeRegional: true };
   // Easter Sunday, Gregorian computus.
-  assert.equal(holidayFor('2026-04-05')?.id, 'easter');
-  assert.equal(holidayFor('2025-04-20')?.id, 'easter');
-  assert.equal(holidayFor('2027-03-28')?.id, 'easter');
-  assert.equal(holidayFor('2026-04-04'), null);
+  assert.equal(holidayFor('2026-04-05', all)?.id, 'easter');
+  assert.equal(holidayFor('2025-04-20', all)?.id, 'easter');
+  assert.equal(holidayFor('2027-03-28', all)?.id, 'easter');
+  assert.equal(holidayFor('2026-04-04', all), null);
 
   // Thanksgiving is the fourth Thursday of November.
-  assert.equal(holidayFor('2026-11-26')?.id, 'thanksgiving');
-  assert.equal(holidayFor('2026-11-19'), null);
-  assert.equal(holidayFor('2027-11-25')?.id, 'thanksgiving');
+  assert.equal(holidayFor('2026-11-26', all)?.id, 'thanksgiving');
+  assert.equal(holidayFor('2026-11-19', all), null);
+  assert.equal(holidayFor('2027-11-25', all)?.id, 'thanksgiving');
 });
 
 test('holiday options parse and resolve', () => {
   assert.equal(parseHolidayOption('auto'), 'auto');
   assert.equal(parseHolidayOption(''), 'auto');
+  assert.equal(parseHolidayOption('ALL'), 'all');
   assert.equal(parseHolidayOption('none'), 'none');
   assert.equal(parseHolidayOption('off'), 'none');
   assert.equal(parseHolidayOption('HALLOWEEN'), 'halloween');
@@ -83,6 +101,14 @@ test('holiday themes are visually distinct from one another', () => {
     renderCivilization(state, history, { holiday: id as HolidayId }),
   );
   assert.equal(new Set(svgs).size, svgs.length);
+});
+
+test('monkeys dress up for holidays and only for holidays', () => {
+  for (const id of HOLIDAY_IDS) {
+    const svg = renderCivilization(state, history, { holiday: id as HolidayId });
+    assert.ok(svg.includes('class="costume"'), `${id} monkeys should wear costumes`);
+  }
+  assert.ok(!renderCivilization(state, history, { holiday: 'none' }).includes('class="costume"'));
 });
 
 test('auto holiday uses the end of the contribution window', () => {

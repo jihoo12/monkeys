@@ -5,9 +5,11 @@ import { drawBuilding, type LightSource } from './buildings.ts';
 import { drawMonkey, drawSpeechBubble } from './sprites.ts';
 import {
   holidayCss,
+  holidayEmblem,
   renderHolidayBackdrop,
   renderHolidayGround,
   renderHolidayOverlay,
+  renderHolidayTerrain,
   type HolidayDefinition,
 } from './holidays.ts';
 import { circle, ellipse, escapeXml, line, poly, rect } from './svg.ts';
@@ -88,7 +90,11 @@ export function renderScene(
     holiday ? renderHolidayBackdrop(holiday, holidayRng, palette) : '',
   ].join('');
 
-  const ground = [renderGround(rng, palette, state), renderContributionPath(history, state, palette)].join('');
+  const ground = [
+    renderGround(rng, palette, state),
+    holiday ? renderHolidayTerrain(holiday, holidayRng, palette) : '',
+    renderContributionPath(history, state, palette),
+  ].join('');
 
   const buildings = SLOTS.map((slotDefinition) => {
     const slot = state.slots.find((candidate) => candidate.id === slotDefinition.id);
@@ -100,7 +106,7 @@ export function renderScene(
   const holidayGround = holiday
     ? renderHolidayGround(holiday, holidayRng, palette, history.to)
     : '';
-  const monkeys = renderMonkeys(state, palette, walkers, animation);
+  const monkeys = renderMonkeys(state, palette, walkers, animation, holiday);
   const foreground = renderForeground(rng, palette, state);
 
   // The day/night overlay must not cover the village when a client ignores
@@ -116,7 +122,7 @@ export function renderScene(
   const moon = renderMoon(palette, state);
   const fireflies = renderFireflies(rng, palette, state);
   const lightLayer = renderLights(lights, palette);
-  const holidayOverlay = holiday ? renderHolidayOverlay(holiday, holidayRng, palette) : '';
+  const holidayOverlay = holiday ? renderHolidayOverlay(holiday, holidayRng, palette, history.to) : '';
   const header = renderHeader(state, palette, holiday);
 
   const svg = [
@@ -836,6 +842,7 @@ function renderMonkeys(
   palette: Palette,
   walkers: WalkerAnimation[],
   animation: boolean,
+  holiday: HolidayDefinition | null = null,
 ): string {
   const parts: string[] = [];
   const monkeys = state.visibleMonkeys;
@@ -883,6 +890,7 @@ function renderMonkeys(
         working,
         celebrate,
         facing,
+        costume: holiday?.id,
       }),
     );
 
@@ -1125,7 +1133,9 @@ function renderHeader(
     2,
     palette,
     2,
-  )}${circle(generatedX - 12, 53, 3, palette.accent2)}${circle(generatedX - 12, 53, 6, palette.accent2, 'opacity="0.2"')}</g>`;
+  )}${circle(generatedX - 12, 53, 3, palette.accent2)}${circle(generatedX - 12, 53, 6, palette.accent2, 'opacity="0.2"')}${
+    holiday ? holidayEmblem(holiday, taglineX - 16, 30) : ''
+  }</g>`;
 }
 
 function pixelHeader(

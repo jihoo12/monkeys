@@ -32,9 +32,10 @@ inputs:
     default: 'true'
   holiday:
     description: >-
-      Holiday theme. auto (default) picks the theme from the generation date;
-      none disables it; or pass halloween, christmas, new-year, valentines,
-      st-patricks, easter, independence, or thanksgiving.
+      Holiday theme. auto (default) picks a widely shared holiday (new-year,
+      valentines, halloween, christmas) from the generation date; all also
+      picks regional holidays (st-patricks, easter, independence,
+      thanksgiving); none disables it; or pass a theme id to force it.
     required: false
     default: auto
 
