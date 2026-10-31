@@ -1,54 +1,55 @@
 {
   "username": "jihoo12",
-  "seed": "c3315557",
+  "seed": "c28ed1bb",
   "age": "SPACE AGE",
   "level": 50,
   "population": 32,
   "capacity": 32,
-  "bananas": 97758,
-  "contributions": 5446,
-  "activeDays": 247,
+  "bananas": 100775,
+  "contributions": 5573,
+  "activeDays": 251,
   "buildings": [
     {
       "id": "dwellings",
       "level": 4,
-      "builtOnDay": 231
+      "builtOnDay": 227
     },
     {
       "id": "farm",
       "level": 4,
-      "builtOnDay": 231
+      "builtOnDay": 227
     },
     {
       "id": "community",
       "level": 4,
-      "builtOnDay": 231
+      "builtOnDay": 227
     },
     {
       "id": "workshop",
       "level": 4,
-      "builtOnDay": 231
+      "builtOnDay": 227
     },
     {
       "id": "culture",
       "level": 4,
-      "builtOnDay": 231
+      "builtOnDay": 227
     },
     {
       "id": "wonder",
       "level": 4,
-      "builtOnDay": 231
+      "builtOnDay": 227
     },
     {
       "id": "energy",
       "level": 4,
-      "builtOnDay": 231
+      "builtOnDay": 227
     },
     {
       "id": "spaceport",
       "level": 4,
-      "builtOnDay": 231
+      "builtOnDay": 227
     }
   ],
-  "lastEvent": "DAY 365: The future is bright and sticky. The bananas are proud."
+  "holiday": "Halloween",
+  "lastEvent": "DAY 365: A contribution meteor shower! 22 commits in one day. The banana pile grows suspiciously tall."
 }
