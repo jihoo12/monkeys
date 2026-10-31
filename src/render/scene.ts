@@ -3,6 +3,13 @@ import type { Palette } from './palette.ts';
 import { shade } from './palette.ts';
 import { drawBuilding, type LightSource } from './buildings.ts';
 import { drawMonkey, drawSpeechBubble } from './sprites.ts';
+import {
+  holidayCss,
+  renderHolidayBackdrop,
+  renderHolidayGround,
+  renderHolidayOverlay,
+  type HolidayDefinition,
+} from './holidays.ts';
 import { circle, ellipse, escapeXml, line, poly, rect } from './svg.ts';
 import { pixelText, pixelTextWidth } from './pixel-font.ts';
 import { createRng, type Rng } from '../util/rng.ts';
@@ -59,8 +66,11 @@ export function renderScene(
   history: ContributionHistory,
   palette: Palette,
   animation: boolean,
+  holiday: HolidayDefinition | null = null,
 ): SceneResult {
   const rng = createRng(`scene:${state.seed}:${state.age.id}`);
+  // Holiday art gets its own stream so non-holiday output never changes.
+  const holidayRng = createRng(`holiday:${state.seed}:${state.age.id}:${holiday?.id ?? 'none'}`);
   const lights: LightSource[] = [];
   const walkers: WalkerAnimation[] = [];
 
@@ -75,6 +85,7 @@ export function renderScene(
     renderMountains(rng, palette, state),
     renderTreeLine(rng, palette, state),
     renderBackdrop(rng, palette, state),
+    holiday ? renderHolidayBackdrop(holiday, holidayRng, palette) : '',
   ].join('');
 
   const ground = [renderGround(rng, palette, state), renderContributionPath(history, state, palette)].join('');
@@ -86,6 +97,9 @@ export function renderScene(
   }).join('');
 
   const village = renderVillageDetails(rng, palette, state, lights);
+  const holidayGround = holiday
+    ? renderHolidayGround(holiday, holidayRng, palette, history.to)
+    : '';
   const monkeys = renderMonkeys(state, palette, walkers, animation);
   const foreground = renderForeground(rng, palette, state);
 
@@ -102,13 +116,15 @@ export function renderScene(
   const moon = renderMoon(palette, state);
   const fireflies = renderFireflies(rng, palette, state);
   const lightLayer = renderLights(lights, palette);
-  const header = renderHeader(state, palette);
+  const holidayOverlay = holiday ? renderHolidayOverlay(holiday, holidayRng, palette) : '';
+  const header = renderHeader(state, palette, holiday);
 
   const svg = [
     background,
     ground,
     buildings,
     village,
+    holidayGround,
     monkeys,
     foreground,
     night,
@@ -116,10 +132,13 @@ export function renderScene(
     moon,
     fireflies,
     lightLayer,
+    holidayOverlay,
     header,
   ].join('');
 
-  const css = animation ? renderSceneCss(walkers) : '';
+  const css = animation
+    ? `${renderSceneCss(walkers)}${holiday ? holidayCss(holiday) : ''}`
+    : '';
   return { svg, css, lights };
 }
 
@@ -1073,11 +1092,15 @@ function renderLights(lights: LightSource[], p: Palette): string {
   return parts.join('');
 }
 
-function renderHeader(state: CivilizationState, palette: Palette): string {
+function renderHeader(
+  state: CivilizationState,
+  palette: Palette,
+  holiday: HolidayDefinition | null = null,
+): string {
   const username = state.username.toUpperCase().replace(/^DEMO-/, 'DEMO/');
   const day = state.days.length;
   const subtitle = `@${username} * YEAR 1 * DAY ${day}`;
-  const tagline = 'COMMITS IN. BANANAS OUT.';
+  const tagline = holiday ? holiday.greeting : 'COMMITS IN. BANANAS OUT.';
   const taglineX = 902 - pixelTextWidth(tagline, 2);
   const generated = username.startsWith('DEMO/') ? 'REPRODUCIBLE DEMO' : 'GENERATED FROM COMMITS';
   const generatedX = 902 - pixelTextWidth(generated, 2);

@@ -31,6 +31,7 @@ jobs:
           output: monkey-civilization.svg
           json_output: monkey-civilization.json
           animate: true
+          holiday: auto
 
       - name: Commit the refreshed civilization
         run: |

@@ -67,6 +67,25 @@ test('CLI static mode removes animations', async () => {
   }
 });
 
+test('CLI applies a forced holiday theme', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'monkey-cli-holiday-'));
+  try {
+    const svgPath = join(dir, 'holiday.svg');
+    const { stdout } = await execFileAsync(
+      process.execPath,
+      ['src/cli.ts', '--demo', 'stone', '--holiday', 'halloween', '--out', svgPath],
+      { cwd: ROOT, timeout: 60_000 },
+    );
+    assert.match(stdout, /Holiday theme: Halloween/);
+    const svg = await readFile(svgPath, 'utf8');
+    assert.ok(svg.includes('holiday-halloween'));
+    assert.ok(svg.includes('HAPPY HALLOWEEN!'));
+    assert.ok(svg.includes('STONE AGE'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('CLI help and error handling', async () => {
   const help = await execFileAsync(process.execPath, ['src/cli.ts', '--help'], {
     cwd: ROOT,
@@ -84,6 +103,19 @@ test('CLI help and error handling', async () => {
       const execError = error as { code?: number; stderr?: string };
       assert.equal(execError.code, 1);
       assert.match(execError.stderr ?? '', /Unknown option/);
+      return true;
+    },
+  );
+
+  await assert.rejects(
+    execFileAsync(process.execPath, ['src/cli.ts', '--demo', '--holiday', 'festivus'], {
+      cwd: ROOT,
+      timeout: 30_000,
+    }),
+    (error: unknown) => {
+      const execError = error as { code?: number; stderr?: string };
+      assert.equal(execError.code, 1);
+      assert.match(execError.stderr ?? '', /Unknown holiday/);
       return true;
     },
   );

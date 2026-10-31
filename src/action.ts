@@ -2,6 +2,7 @@ import { appendFile } from 'node:fs/promises';
 import { isAbsolute, relative, resolve } from 'node:path';
 import { formatCompatibilityReport } from './compat.ts';
 import { generateCivilization, type GenerateResult } from './generate.ts';
+import { parseHolidayOption } from './render/holidays.ts';
 import { formatNumber } from './util/date.ts';
 
 const FALSE_VALUES = new Set(['false', '0', 'no', 'off']);
@@ -29,6 +30,7 @@ async function main(): Promise<void> {
   const output = readInput('OUTPUT') || 'monkey-civilization.svg';
   const jsonOutput = readInput('JSON_OUTPUT');
   const animate = !FALSE_VALUES.has(readInput('ANIMATE').toLowerCase());
+  const holiday = parseHolidayOption(readInput('HOLIDAY') || 'auto');
 
   if (!token) {
     fail(
@@ -47,6 +49,7 @@ async function main(): Promise<void> {
     out: resolveFromWorkspace(workspace, output),
     json: jsonOutput ? resolveFromWorkspace(workspace, jsonOutput) : undefined,
     animation: animate,
+    holiday,
     endpoint: graphqlEndpoint(),
   });
 
@@ -101,6 +104,7 @@ async function publishResult(result: GenerateResult, workspace: string): Promise
   console.log(
     `  ${state.milestones.buildings} buildings · ${state.stats.activeDays} active days · seed ${state.seed}`,
   );
+  if (result.holiday) console.log(`  Holiday theme: ${result.holiday.name}`);
   console.log(`  ${formatCompatibilityReport(report)}`);
 
   await setOutput('svg_path', result.outPath);
@@ -109,6 +113,7 @@ async function publishResult(result: GenerateResult, workspace: string): Promise
   await setOutput('population', String(state.population));
   await setOutput('contributions', String(state.totalContributions));
   await setOutput('buildings', String(state.milestones.buildings));
+  await setOutput('holiday', result.holiday?.name ?? '');
 
   await writeSummary(
     [
@@ -120,6 +125,7 @@ async function publishResult(result: GenerateResult, workspace: string): Promise
       '',
       `- SVG: \`${svgPath}\``,
       ...(jsonPath ? [`- JSON: \`${jsonPath}\``] : []),
+      ...(result.holiday ? [`- Holiday theme: ${result.holiday.name}`] : []),
       `- Seed: \`${state.seed}\``,
       `- Compatibility: ${report.ok ? 'pass' : 'FAIL'}`,
       '',

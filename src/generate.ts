@@ -4,6 +4,7 @@ import { checkSvgCompatibility, type CompatibilityReport } from './compat.ts';
 import { fetchContributionHistory } from './data/contributions.ts';
 import { demoHistory, type DemoProfile } from './data/demo.ts';
 import { renderCivilization } from './render/render.ts';
+import { resolveHoliday, type HolidayDefinition, type HolidayOption } from './render/holidays.ts';
 import { simulateCivilization } from './sim/engine.ts';
 import type { CivilizationState, ContributionHistory } from './types.ts';
 
@@ -20,6 +21,11 @@ export interface GenerateOptions {
   json?: string;
   /** Set to false to emit a fully static SVG. Defaults to true. */
   animation?: boolean;
+  /**
+   * Holiday theme: `auto` (default) uses the last day of the window, `none`
+   * disables it, or pass an explicit holiday id.
+   */
+  holiday?: HolidayOption;
   /** Override the GraphQL endpoint (GitHub Enterprise, tests). */
   endpoint?: string;
   fetchImpl?: typeof fetch;
@@ -36,6 +42,7 @@ export interface CivilizationSummary {
   contributions: number;
   activeDays: number;
   buildings: Array<{ id: string; level: number; builtOnDay: number | null }>;
+  holiday: string | null;
   lastEvent: string;
 }
 
@@ -43,6 +50,7 @@ export interface GenerateResult {
   svg: string;
   state: CivilizationState;
   history: ContributionHistory;
+  holiday: HolidayDefinition | null;
   report: CompatibilityReport;
   outPath: string;
   jsonPath?: string;
@@ -57,7 +65,11 @@ export interface GenerateResult {
 export async function generateCivilization(options: GenerateOptions): Promise<GenerateResult> {
   const history = options.demo ? demoHistory(options.demo) : await loadHistory(options);
   const state = simulateCivilization(history);
-  const svg = renderCivilization(state, history, { animation: options.animation ?? true });
+  const holiday = resolveHoliday(options.holiday, history.to);
+  const svg = renderCivilization(state, history, {
+    animation: options.animation ?? true,
+    holiday: holiday?.id ?? 'none',
+  });
   const report = checkSvgCompatibility(svg);
 
   const outPath = resolve(options.out);
@@ -68,13 +80,20 @@ export async function generateCivilization(options: GenerateOptions): Promise<Ge
   if (options.json) {
     jsonPath = resolve(options.json);
     await mkdir(dirname(jsonPath), { recursive: true });
-    await writeFile(jsonPath, `${JSON.stringify(summarizeCivilization(state), null, 2)}\n`, 'utf8');
+    await writeFile(
+      jsonPath,
+      `${JSON.stringify(summarizeCivilization(state, holiday), null, 2)}\n`,
+      'utf8',
+    );
   }
 
-  return { svg, state, history, report, outPath, jsonPath };
+  return { svg, state, history, holiday, report, outPath, jsonPath };
 }
 
-export function summarizeCivilization(state: CivilizationState): CivilizationSummary {
+export function summarizeCivilization(
+  state: CivilizationState,
+  holiday: HolidayDefinition | null = null,
+): CivilizationSummary {
   return {
     username: state.username,
     seed: state.seed,
@@ -92,6 +111,7 @@ export function summarizeCivilization(state: CivilizationState): CivilizationSum
         level: slot.level,
         builtOnDay: slot.builtOnDay,
       })),
+    holiday: holiday?.name ?? null,
     lastEvent: state.lastEvent.text,
   };
 }

@@ -1,6 +1,7 @@
 import { formatCompatibilityReport } from './compat.ts';
 import { DEMO_PROFILES, type DemoProfile } from './data/demo.ts';
 import { generateCivilization } from './generate.ts';
+import { HOLIDAY_IDS, parseHolidayOption, type HolidayOption } from './render/holidays.ts';
 import { formatNumber } from './util/date.ts';
 
 interface CliOptions {
@@ -12,6 +13,7 @@ interface CliOptions {
   to?: string;
   json?: string;
   animation: boolean;
+  holiday: HolidayOption;
   help: boolean;
 }
 
@@ -31,6 +33,8 @@ Options:
       --to <YYYY-MM-DD>    Last day of the contribution window (default: today UTC)
       --json <path>        Also write a small simulation summary as JSON
       --no-animation       Emit a static SVG (animations are progressive enhancement)
+      --holiday <theme>    Holiday theme: auto (default), none, or one of:
+                           ${HOLIDAY_IDS.join(', ')}
   -h, --help               Show this help
 
 Examples:
@@ -55,8 +59,9 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     to: options.to,
     json: options.json,
     animation: options.animation,
+    holiday: options.holiday,
   });
-  const { state, report, outPath } = result;
+  const { state, holiday, report, outPath } = result;
 
   console.log(`Monkey Civilization generated: ${outPath}`);
   console.log(
@@ -67,6 +72,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
   console.log(
     `  ${state.milestones.buildings} buildings · ${state.stats.activeDays} active days · seed ${state.seed}`,
   );
+  if (holiday) console.log(`  Holiday theme: ${holiday.name}`);
   console.log(`  ${formatCompatibilityReport(report)}`);
   return report.ok ? 0 : 1;
 }
@@ -78,6 +84,7 @@ function parseArgs(argv: string[]): CliOptions {
     token: process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN ?? process.env.MONKEY_TOKEN ?? null,
     out: 'monkey-civilization.svg',
     animation: true,
+    holiday: 'auto',
     help: false,
   };
 
@@ -135,6 +142,11 @@ function parseArgs(argv: string[]): CliOptions {
       case '--json':
         if (!value) throw new Error('--json requires a value');
         options.json = value;
+        if (!inlineValue) i += 1;
+        break;
+      case '--holiday':
+        if (!value) throw new Error('--holiday requires a value');
+        options.holiday = parseHolidayOption(value);
         if (!inlineValue) i += 1;
         break;
       default:

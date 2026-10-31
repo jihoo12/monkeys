@@ -1,5 +1,6 @@
 import type { CivilizationState, ContributionHistory } from '../types.ts';
 import { paletteFor } from './palette.ts';
+import { applyHolidayPalette, resolveHoliday, type HolidayOption } from './holidays.ts';
 import { renderScene } from './scene.ts';
 import { renderHud } from './hud.ts';
 import { escapeXml } from './svg.ts';
@@ -8,6 +9,11 @@ import { formatNumber } from '../util/date.ts';
 export interface RenderOptions {
   /** Disable CSS animation (useful for deterministic screenshots/tests). */
   animation?: boolean;
+  /**
+   * Holiday theme. `auto` (the default) picks the theme from the last day of
+   * the contribution window, `none` disables it, or pass an explicit id.
+   */
+  holiday?: HolidayOption;
 }
 
 export const CANVAS_WIDTH = 960;
@@ -19,18 +25,22 @@ export function renderCivilization(
   options: RenderOptions = {},
 ): string {
   const animation = options.animation ?? true;
-  const palette = paletteFor(state.age);
-  const scene = renderScene(state, history, palette, animation);
+  const holiday = resolveHoliday(options.holiday, history.to);
+  const palette = applyHolidayPalette(paletteFor(state.age), holiday);
+  const scene = renderScene(state, history, palette, animation, holiday);
   const hud = renderHud(state, palette);
 
-  const title = `Monkey Civilization - @${state.username}, ${state.age.name}, population ${state.population}, ${formatNumber(
+  const holidayTitle = holiday ? `, ${holiday.name}` : '';
+  const title = `Monkey Civilization - @${state.username}, ${state.age.name}${holidayTitle}, population ${state.population}, ${formatNumber(
     state.bananas,
   )} bananas`;
-  const description = `${state.stats.activeDays} active days, ${formatNumber(
+  const holidayGreeting = holiday ? `${holiday.greeting} ` : '';
+  const description = `${holidayGreeting}${state.stats.activeDays} active days, ${formatNumber(
     state.totalContributions,
   )} contributions, ${state.milestones.buildings} buildings. A deterministic pixel-art civilization powered by GitHub contributions.`;
+  const holidayClass = holiday ? ` holiday-${holiday.id}` : '';
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" viewBox="0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}" role="img" aria-labelledby="mc-title mc-desc" class="age-${state.age.id}" preserveAspectRatio="xMidYMid meet">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" viewBox="0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}" role="img" aria-labelledby="mc-title mc-desc" class="age-${state.age.id}${holidayClass}" preserveAspectRatio="xMidYMid meet">
 <title id="mc-title">${escapeXml(title)}</title>
 <desc id="mc-desc">${escapeXml(description)}</desc>
 <defs>

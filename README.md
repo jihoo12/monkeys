@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="examples/gallery.html">Age gallery</a> ·
+  <a href="examples/gallery.html">Age and holiday gallery</a> ·
   <a href="#add-it-to-your-repository">Use as an Action</a> ·
   <a href="docs/compatibility.md">GitHub compatibility notes</a> ·
   <a href="#quick-start">Quick start</a> ·
@@ -31,6 +31,7 @@ The simulation is deterministic. The same contribution history always produces e
 - **Pixel-art SVG renderer**: a 960×500 scene plus a ~160px HUD inside a 960×660 canvas, 5×7 path-based pixel font, age-specific palettes, 8 building plots with 5 visual tiers each, 14 hand-placed monkey spots, and a compact HUD.
 - **CSS-only animation**: walking, bobbing, tail wags, working arms, smoke, fire, clouds, windmills, turbines, Ferris wheels, orbiting bananas, rocket flames, stars, day/night, fireflies, and speech bubbles.
 - **Reproducible demos** for five ages: stone, medieval, industrial, modern, and space.
+- **Date-driven holiday themes** for New Year, Valentine's Day, St. Patrick's Day, Easter, Independence Day, Halloween, Thanksgiving, and Christmas, each with its own palette, greeting, and pixel-art decorations.
 - **Local preview server** that mimics GitHub's light and dark README contexts.
 - **Compatibility checker** for the SVG subset that GitHub renders reliably inside `<img>`.
 - **Tests** for determinism, simulation invariants, GraphQL parsing, rendering, CLI behavior, compatibility rules, and the action running from a separate consumer workspace.
@@ -88,8 +89,9 @@ That is the whole setup. The action runs from its own checkout, installs nothing
 | `output` | no | `monkey-civilization.svg` | SVG path, relative to your workspace. |
 | `json_output` | no | empty | Optional JSON summary path. |
 | `animate` | no | `true` | Set to `false` for a fully static SVG. |
+| `holiday` | no | `auto` | Holiday theme: `auto` uses the generation date, `none` disables it, or pass a theme id such as `halloween`. |
 
-Outputs: `svg_path`, `json_path`, `age`, `population`, `contributions`, and `buildings`.
+Outputs: `svg_path`, `json_path`, `age`, `population`, `contributions`, `buildings`, and `holiday`.
 
 > **Token note:** the automatic `GITHUB_TOKEN` works for many public calendars. If GitHub rejects the query, pass a classic PAT with `read:user` instead: `github_token: ${{ secrets.MONKEY_TOKEN }}`. Private contribution counts also require a token that can see those repositories.
 
@@ -120,11 +122,11 @@ npm run render:png
 # examples/monkey-civilization.png
 ```
 
-To regenerate the five-age gallery:
+To regenerate the age and holiday gallery:
 
 ```bash
 npm run generate:gallery
-# examples/ages/*.svg and examples/gallery.html
+# examples/ages/*.svg, examples/holidays/*.svg, and examples/gallery.html
 ```
 
 ## Use your real contributions
@@ -163,6 +165,7 @@ The CLI prints a summary, runs the compatibility checker, and exits non-zero if 
 | `--from`, `--to` | Inclusive UTC date window. Defaults to the last 365 days ending today. |
 | `--json <path>` | Also write a machine-readable summary. |
 | `--no-animation` | Emit a static SVG with no keyframes or animation declarations. |
+| `--holiday <theme>` | Holiday theme: `auto` (default), `none`, or a theme id. |
 | `--help`, `-h` | Show help. |
 
 ## How it works
@@ -220,6 +223,8 @@ That seed drives the RNG used for monkey colors, accessories, jokes, and scene d
 
 Real-data runs are deterministic **for a given window**. Because the window slides forward each day, the civilization changes when old contributions fall out of the 365-day range.
 
+The holiday theme is derived from the window's last date (`--to`), not from `Date.now()` at render time. Pass `--holiday none` or an explicit theme id to make the theme independent of the calendar.
+
 ## Ages
 
 | Age | Contributions | Yield | What changes |
@@ -232,13 +237,49 @@ Real-data runs are deterministic **for a given window**. Because the window slid
 
 The HUD shows the current age, level, population, capacity, bananas, daily income, contribution total, active days, and a segmented age-progress bar. The contribution path at the bottom of the scene is a weekly heatmap; age milestones get little flags.
 
+## Holiday themes
+
+On a holiday, the civilization dresses up. The palette, the header greeting, and a layer of pixel-art decorations all change, while the simulation and the age stay exactly the same.
+
+| Theme | When | What changes |
+| --- | --- | --- |
+| New Year | Dec 31 – Jan 1 | Fireworks, confetti, champagne, gold palette |
+| Valentine's Day | Feb 14 | Floating hearts, balloons, rose bushes, pink palette |
+| St. Patrick's Day | Mar 17 | Rainbow, shamrocks, pot of gold, green palette |
+| Easter Sunday | Movable feast | Pastel eggs, bunting, bunny, basket |
+| Independence Day | Jul 4 | Fireworks, flags, red/white/blue palette |
+| Halloween | Oct 31 | Bats, ghosts, jack-o'-lanterns, purple/orange palette |
+| Thanksgiving | Fourth Thursday of November | Autumn leaves, pumpkins, corn, turkey, warm palette |
+| Christmas | Dec 24 – Dec 26 | Snow, garland, tree, presents, snowman, red/green palette |
+
+The theme is picked from the **last day of the contribution window**, which is today UTC for a normal run. It is deterministic: the same window always produces the same theme. Nothing reads the wall clock outside the window.
+
+Override or disable it with the CLI or action input:
+
+```bash
+# Force a theme (useful for previews and screenshots)
+npm run generate -- --demo --holiday halloween --out halloween.svg
+
+# Disable the automatic theme
+npm run generate -- --user your-login --holiday none
+```
+
+```yaml
+- uses: jihoo12/monkeys@v1
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    holiday: christmas
+```
+
+The holiday previews are in the [age gallery](examples/gallery.html#holiday-themes) under `examples/holidays/`.
+
 ## Commands
 
 | Command | What it does |
 | --- | --- |
 | `npm run generate:demo` | Generate the space-age example SVG. |
 | `npm run generate -- --user <login>` | Generate from real GitHub data. |
-| `npm run generate:gallery` | Regenerate all five age SVGs and `examples/gallery.html`. |
+| `npm run generate:gallery` | Regenerate the age and holiday SVGs and `examples/gallery.html`. |
 | `npm run check:examples` | Regenerate the demo and gallery, then fail if checked-in examples drift. |
 | `npm run preview` | Serve the local GitHub-style preview at `127.0.0.1:4321`. |
 | `npm test` | Run the Node test suite, including the action tests. |
@@ -358,6 +399,7 @@ src/
     art.ts                shared pixel-art props: trees, windows, fire, clouds
     pixel-font.ts         path-based 5×7 font
     palette.ts            age-specific color palettes
+    holidays.ts           date-driven holiday palettes and decorations
     svg.ts                small SVG helpers
   util/
     date.ts               UTC date and number helpers
@@ -376,7 +418,8 @@ tests/
 examples/
   monkey-civilization.svg animated space-age example
   ages/                   one SVG per age
-  gallery.html            browsable age gallery
+  holidays/               one SVG per holiday theme
+  gallery.html            browsable age and holiday gallery
   consumer-workflow.yml   copy-paste workflow for any repository
 docs/
   compatibility.md        GitHub rendering notes
@@ -398,6 +441,7 @@ The test suite covers:
 - Age boundary values and progress clamping.
 - Simulation invariants: population ≤ capacity, non-negative bananas, valid plot states, visible monkeys drawn from the population, 8 plots, astronaut presence in the space age.
 - Determinism of both simulation and SVG output.
+- Holiday date matching (fixed dates, Easter computus, Thanksgiving), palette overrides, distinct themes, and auto/none overrides.
 - GraphQL request shape, day normalization, missing days, level mapping, and error paths.
 - Static-mode removal of all animations.
 - A rasterized first-frame check that keeps the village visible when CSS animation is ignored.

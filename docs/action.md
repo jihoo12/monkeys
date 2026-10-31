@@ -48,6 +48,7 @@ A complete version that also writes and commits the JSON summary lives at
 | `output` | no | `monkey-civilization.svg` | SVG path, relative to `GITHUB_WORKSPACE`. Absolute paths are also accepted. |
 | `json_output` | no | empty | Optional JSON summary path. Empty disables the summary. |
 | `animate` | no | `true` | `false`/`0`/`no`/`off` emits a fully static SVG. |
+| `holiday` | no | `auto` | `auto` picks the theme from the generation date, `none` disables it, or pass `halloween`, `christmas`, `new-year`, `valentines`, `st-patricks`, `easter`, `independence`, or `thanksgiving`. |
 
 ## Outputs
 
@@ -59,8 +60,20 @@ A complete version that also writes and commits the JSON summary lives at
 | `population` | Monkey population. |
 | `contributions` | Contributions in the 365-day window. |
 | `buildings` | Number of constructed buildings. |
+| `holiday` | Active holiday theme name, or empty when none is active. |
 
 The action also appends a short summary to the job's step summary.
+
+## Holiday themes
+
+With the default `holiday: auto`, the generated SVG automatically uses the theme for the last day of the contribution window (today UTC for a normal run). On October 31 it becomes Halloween, on December 25 it becomes Christmas, and so on. The theme is deterministic for a given window and can be forced or disabled:
+
+```yaml
+- uses: jihoo12/monkeys@v1
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    holiday: halloween   # or none, christmas, new-year, ...
+```
 
 ## How it runs
 

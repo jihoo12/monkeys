@@ -153,6 +153,7 @@ function cleanEnvironment(): NodeJS.ProcessEnv {
     'INPUT_OUTPUT',
     'INPUT_JSON_OUTPUT',
     'INPUT_ANIMATE',
+    'INPUT_HOLIDAY',
   ]) {
     delete env[key];
   }
@@ -217,6 +218,7 @@ test('action generates into a separate consumer workspace', async () => {
       INPUT_OUTPUT: 'art/monkeys.svg',
       INPUT_JSON_OUTPUT: 'art/monkeys.json',
       INPUT_ANIMATE: 'true',
+      INPUT_HOLIDAY: 'halloween',
       MONKEY_GRAPHQL_URL: github.url,
     });
 
@@ -238,10 +240,12 @@ test('action generates into a separate consumer workspace', async () => {
       age: string;
       population: number;
       contributions: number;
+      holiday: string | null;
     };
     assert.equal(summary.username, 'fake-user');
     assert.ok(summary.population > 0);
     assert.ok(summary.contributions > 0);
+    assert.equal(summary.holiday, 'Halloween');
 
     const outputs = await readFile(outputFile, 'utf8');
     assert.match(outputs, new RegExp(`^svg_path=${escapeRegExp(svgPath)}$`, 'm'));
@@ -250,6 +254,7 @@ test('action generates into a separate consumer workspace', async () => {
     assert.match(outputs, /^population=\d+$/m);
     assert.match(outputs, /^contributions=\d+$/m);
     assert.match(outputs, /^buildings=\d+$/m);
+    assert.match(outputs, /^holiday=Halloween$/m);
 
     const stepSummary = await readFile(summaryFile, 'utf8');
     assert.match(stepSummary, /## Monkey Civilization/);
@@ -420,10 +425,12 @@ test('action.yml is a composite action with the documented contract', async () =
     'output',
     'json_output',
     'animate',
+    'holiday',
   ]);
   assert.equal(action.inputs.github_token?.required, true);
   assert.equal(action.inputs.output?.default, 'monkey-civilization.svg');
   assert.equal(action.inputs.animate?.default, 'true');
+  assert.equal(action.inputs.holiday?.default, 'auto');
 
   const setup = action.runs.steps[0];
   assert.equal(setup?.uses, 'actions/setup-node@v4');
@@ -438,6 +445,7 @@ test('action.yml is a composite action with the documented contract', async () =
   assert.equal(generate.env?.INPUT_OUTPUT, '${{ inputs.output }}');
   assert.equal(generate.env?.INPUT_JSON_OUTPUT, '${{ inputs.json_output }}');
   assert.equal(generate.env?.INPUT_ANIMATE, '${{ inputs.animate }}');
+  assert.equal(generate.env?.INPUT_HOLIDAY, '${{ inputs.holiday }}');
 
   for (const output of Object.values(action.outputs)) {
     assert.match(output.value ?? '', /steps\.generate\.outputs\./);

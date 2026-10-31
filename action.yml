@@ -30,6 +30,13 @@ inputs:
     description: Emit CSS animations. Set to false for a fully static SVG.
     required: false
     default: 'true'
+  holiday:
+    description: >-
+      Holiday theme. auto (default) picks the theme from the generation date;
+      none disables it; or pass halloween, christmas, new-year, valentines,
+      st-patricks, easter, independence, or thanksgiving.
+    required: false
+    default: auto
 
 outputs:
   svg_path:
@@ -50,6 +57,9 @@ outputs:
   buildings:
     description: Number of constructed buildings.
     value: ${{ steps.generate.outputs.buildings }}
+  holiday:
+    description: Active holiday theme name, or empty when none is active.
+    value: ${{ steps.generate.outputs.holiday }}
 
 runs:
   using: composite
@@ -68,6 +78,7 @@ runs:
         INPUT_OUTPUT: ${{ inputs.output }}
         INPUT_JSON_OUTPUT: ${{ inputs.json_output }}
         INPUT_ANIMATE: ${{ inputs.animate }}
+        INPUT_HOLIDAY: ${{ inputs.holiday }}
       # GITHUB_ACTION_PATH is the runner's environment form of
       # github.action_path, so imports resolve inside the action checkout.
       run: node "$GITHUB_ACTION_PATH/src/action.ts"
